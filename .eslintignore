@@ -1,0 +1,4 @@
+jest.config.*
+*.cjs
+vite.config.*
+vitest.config.*

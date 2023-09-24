@@ -1,0 +1,9 @@
+body {
+  width: 440px;
+  height: 300px;
+  margin: 0;
+}
+
+#root {
+  height: 100%;
+}
