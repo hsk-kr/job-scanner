@@ -12,7 +12,7 @@ const Header = ({ onGithubClick }: HeaderProps) => {
     <AppBar position="static">
       <Toolbar>
         <Typography variant="h6" component="div" flexGrow={1}>
-          LinkedIn Jobs Scrapper
+          LinkedIn Job Scanner
         </Typography>
         <div
           role="button"
