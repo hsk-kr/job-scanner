@@ -28,7 +28,7 @@ const RandomTipBanner = ({ tips, delay }: RandomTipBannerProps) => {
   }, [delay, tips]);
 
   return (
-    <Box>
+    <Box p={1} boxShadow={1}>
       <Typography data-testid="tip" variant="caption">
         {tip}
       </Typography>

@@ -1,9 +1,12 @@
 body {
   width: 440px;
-  height: 300px;
+  height: 600px;
   margin: 0;
 }
 
-#root {
+#root,
+#root > div {
   height: 100%;
+  display: flex;
+  flex-direction: column;
 }
