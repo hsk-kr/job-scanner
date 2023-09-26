@@ -14,6 +14,7 @@ import LogIcon from '@mui/icons-material/Dvr';
 import DuplicateIcon from '@mui/icons-material/ContentCopy';
 import { JobTask, JobTaskStatus } from '@/types/job';
 import Button from '@mui/material/Button';
+import Tooltip from '@mui/material/Tooltip';
 
 interface TaskProps {
   taskName: string;
@@ -30,7 +31,7 @@ interface TaskProps {
 }
 
 export interface TaskListProps {
-  tasks: JobTask[];
+  tasks: Omit<JobTask, 'delay'>[];
   activeTaskId?: string;
   onEdit?: (id: string) => void;
   onLog?: (id: string) => void;
@@ -104,62 +105,76 @@ export const Task = ({
           <Box>
             {active ? (
               !hasDone && (
-                <IconButton onClick={onTask} data-testid="taskBtn">
-                  <StopIcon data-testid="stopBtn" />
-                </IconButton>
+                <Tooltip title="Stop Task">
+                  <IconButton onClick={onTask} data-testid="taskBtn">
+                    <StopIcon data-testid="stopBtn" />
+                  </IconButton>
+                </Tooltip>
               )
             ) : (
               <>
                 {!hasDone && (
-                  <IconButton
-                    onClick={onTask}
-                    data-testid="taskBtn"
-                    disabled={disabled}
-                  >
-                    {isReady ? <StartIcon /> : <StopIcon />}
-                  </IconButton>
+                  <Tooltip title={isReady ? 'Start Task' : 'Stop Task'}>
+                    <IconButton
+                      onClick={onTask}
+                      data-testid="taskBtn"
+                      disabled={disabled}
+                    >
+                      {isReady ? <StartIcon /> : <StopIcon />}
+                    </IconButton>
+                  </Tooltip>
                 )}
                 {hasDone && (
                   <>
-                    <IconButton
-                      onClick={onDownload}
-                      disabled={disabled}
-                      data-testid="downloadBtn"
-                    >
-                      <DownloadIcon />
-                    </IconButton>
-                    <IconButton
-                      onClick={onLog}
-                      disabled={disabled}
-                      data-testid="logBtn"
-                    >
-                      <LogIcon />
-                    </IconButton>
+                    <Tooltip title="Download">
+                      <IconButton
+                        onClick={onDownload}
+                        disabled={disabled}
+                        data-testid="downloadBtn"
+                      >
+                        <DownloadIcon />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title="View Log">
+                      <IconButton
+                        onClick={onLog}
+                        disabled={disabled}
+                        data-testid="logBtn"
+                      >
+                        <LogIcon />
+                      </IconButton>
+                    </Tooltip>
                   </>
                 )}
-                <IconButton
-                  onClick={onDuplicate}
-                  disabled={disabled}
-                  data-testid="duplicateBtn"
-                >
-                  <DuplicateIcon />
-                </IconButton>
-                {!hasDone && (
+                <Tooltip title="Copy Task">
                   <IconButton
-                    onClick={onEdit}
+                    onClick={onDuplicate}
                     disabled={disabled}
-                    data-testid="editBtn"
+                    data-testid="duplicateBtn"
                   >
-                    <EditIcon />
+                    <DuplicateIcon />
                   </IconButton>
+                </Tooltip>
+                {!hasDone && (
+                  <Tooltip title="Edit Task">
+                    <IconButton
+                      onClick={onEdit}
+                      disabled={disabled}
+                      data-testid="editBtn"
+                    >
+                      <EditIcon />
+                    </IconButton>
+                  </Tooltip>
                 )}
-                <IconButton
-                  onClick={onDelete}
-                  disabled={disabled}
-                  data-testid="deleteBtn"
-                >
-                  <DeleteIcon />
-                </IconButton>
+                <Tooltip title="Delete Task">
+                  <IconButton
+                    onClick={onDelete}
+                    disabled={disabled}
+                    data-testid="deleteBtn"
+                  >
+                    <DeleteIcon />
+                  </IconButton>
+                </Tooltip>
               </>
             )}
           </Box>
@@ -254,7 +269,7 @@ const TaskList = ({
           disabled={activeTaskId !== task.id && activeTaskId !== undefined}
           taskName={task.taskName}
           status={task.status}
-          createdAt={task.createdAt}
+          createdAt={task.updatedAt}
           onTask={handleTask(task.id)}
           onDelete={handleDelete(task.id)}
           onDownload={handleDownload(task.id)}

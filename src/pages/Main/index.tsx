@@ -1,41 +1,57 @@
-import TaskList from '@/components/TaskList';
-import Header from '@/components/main/Header';
+import { useNavigate } from 'react-router-dom';
+import TaskList from '@/components/main/TaskList';
+import Header from '@/components/main/MainHeader';
 import RandomTipBanner from '@/components/main/RandomTipBanner';
 import styled from '@emotion/styled';
 import Divider from '@mui/material/Divider';
 
-const Container = styled.div``;
+const Container = styled.div`
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+`;
 
 const Main = () => {
+  const navigate = useNavigate();
+
+  const openGithub = () => {
+    window.open('https://github.com/hsk-kr/linkedin-job-scanner', '_blank');
+  };
+
+  const handleTaskAdd = () => {
+    navigate('/task-form');
+  };
+
   return (
     <Container>
-      <Header />
+      <Header onGithubClick={openGithub} />
       <RandomTipBanner tips={['tipa', 'tipb']} delay={1000} />
       <Divider />
       <TaskList
-        activeTaskId="3"
+        onAdd={handleTaskAdd}
+        // activeTaskId="3"
         tasks={[
           {
             taskName: 'Task A',
-            createdAt: '2023-09-25',
+            updatedAt: '2023-09-25',
             id: '1',
             status: 'ready',
           },
           {
             taskName: 'Task B',
-            createdAt: '2023-09-25',
+            updatedAt: '2023-09-25',
             id: '2',
             status: 'ready',
           },
           {
             taskName: 'Task C',
-            createdAt: '2023-09-25',
+            updatedAt: '2023-09-25',
             id: '3',
             status: 'processing',
           },
           {
             taskName: 'Task D',
-            createdAt: '2023-09-25',
+            updatedAt: '2023-09-25',
             id: '4',
             status: 'done',
           },

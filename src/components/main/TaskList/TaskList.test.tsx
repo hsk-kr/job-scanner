@@ -9,19 +9,19 @@ const defaultTaskListProps: ComponentProps<typeof TaskList> = {
     {
       id: 'a',
       taskName: 'Frontend',
-      createdAt: '2023-09-25',
+      updatedAt: '2023-09-25',
       status: 'ready',
     },
     {
       id: 'b',
       taskName: 'Backend',
-      createdAt: '2023-09-25',
+      updatedAt: '2023-09-25',
       status: 'done',
     },
     {
       id: 'c',
       taskName: 'Devops',
-      createdAt: '2023-09-25',
+      updatedAt: '2023-09-25',
       status: 'stopped',
     },
   ],
@@ -34,7 +34,7 @@ const processingTaskListProps: ComponentProps<typeof TaskList> = {
     {
       id: 'd',
       taskName: 'React',
-      createdAt: '2023-09-25',
+      updatedAt: '2023-09-25',
       status: 'processing',
     },
   ],

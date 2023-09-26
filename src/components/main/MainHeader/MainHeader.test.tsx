@@ -1,10 +1,10 @@
 import { test, describe, expect, vi } from 'vitest';
 import { render } from '@testing-library/react';
-import Header from '.';
+import MainHeader from '.';
 
-describe('Header', () => {
+describe('MainHeader', () => {
   test('should be rendered.', () => {
-    const { getByText } = render(<Header />);
+    const { getByText } = render(<MainHeader />);
 
     expect(getByText(/LinkedIn Job Scanner/)).toBeInTheDocument();
   });
@@ -12,7 +12,7 @@ describe('Header', () => {
   test('should fire github click event.', () => {
     const handleGithubClick = vi.fn();
     const { getByTestId } = render(
-      <Header onGithubClick={handleGithubClick} />
+      <MainHeader onGithubClick={handleGithubClick} />
     );
     const githubIcon = getByTestId('github');
     githubIcon.click();

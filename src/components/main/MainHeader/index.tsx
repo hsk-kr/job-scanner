@@ -1,13 +1,13 @@
-import { GitHub } from '@mui/icons-material';
+import GitHub from '@mui/icons-material/Github';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 
-interface HeaderProps {
+interface MainHeaderProps {
   onGithubClick?: VoidFunction;
 }
 
-const Header = ({ onGithubClick }: HeaderProps) => {
+const MainHeader = ({ onGithubClick }: MainHeaderProps) => {
   return (
     <AppBar position="static">
       <Toolbar>
@@ -27,4 +27,4 @@ const Header = ({ onGithubClick }: HeaderProps) => {
   );
 };
 
-export default Header;
+export default MainHeader;
