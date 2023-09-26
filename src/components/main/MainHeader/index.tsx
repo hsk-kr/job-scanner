@@ -1,4 +1,4 @@
-import GitHubIcon from '@mui/icons-material/Github';
+import GithubIcon from '@mui/icons-material/Github';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
@@ -20,7 +20,7 @@ const MainHeader = ({ onGithubClick }: MainHeaderProps) => {
           data-testid="github"
           onClick={onGithubClick}
         >
-          <GitHubIcon />
+          <GithubIcon />
         </div>
       </Toolbar>
     </AppBar>
