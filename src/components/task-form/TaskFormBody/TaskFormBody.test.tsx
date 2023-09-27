@@ -7,8 +7,8 @@ describe('TaskFormBody', () => {
     const { getByTestId, findByTestId, queryByTestId } = render(
       <TaskFormBody />
     );
-    const conditionCheckOpenBtn = getByTestId('conditionCheckOpenBtn');
-    conditionCheckOpenBtn.click();
+    const conditionCheckOpenLink = getByTestId('conditionCheckOpenLink');
+    conditionCheckOpenLink.click();
 
     const conditionCheckModal = await findByTestId('conditionCheckModal');
     expect(conditionCheckModal).toBeInTheDocument();

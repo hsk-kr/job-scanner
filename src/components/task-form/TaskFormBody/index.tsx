@@ -126,21 +126,14 @@ const TaskFormBody = ({
       }}
     >
       <Box display="flex" flexDirection="column" rowGap={2} mt={2}>
-        <Button
-          type="submit"
-          fullWidth
-          variant="contained"
-          color={submitButtonColor}
-        >
-          {submitButtonText}
-        </Button>
-        <Box display="flex" columnGap={1}>
+        <Box display="flex" columnGap={1} paddingLeft={1} paddingRight={1}>
           <TextField
             {...register('taskName', {
               required: 'Task Name is required.',
               maxLength: 12,
             })}
             data-testid="taskName"
+            size="small"
             sx={{ flex: 1 }}
             label="Task Name"
             error={errors.taskName !== undefined}
@@ -159,6 +152,7 @@ const TaskFormBody = ({
                   message: 'Delay must be less than or equal to 10000.',
                 },
               })}
+              size="small"
               data-testid="delay"
               sx={{ flex: 1 }}
               label="Delay(ms)"
@@ -173,8 +167,15 @@ const TaskFormBody = ({
         </Box>
         <Divider />
       </Box>
-      <Alert severity="info">
-        Jobs that meet all conditions will be found.
+      <Alert severity="info" sx={{ marginBottom: 1 }}>
+        Jobs that meet all conditions will be found.{' '}
+        <a
+          href="javascript:void(0)"
+          data-testid="conditionCheckOpenLink"
+          onClick={toggleModalOpen}
+        >
+          Click here to test if your conditions meet your expectations.
+        </a>
       </Alert>
       <TaskConditionList
         items={jobConditions}
@@ -183,16 +184,10 @@ const TaskFormBody = ({
         onSubConditionAdd={handleSubConditionAdd}
         onSubConditionRemove={handleSubConditionRemove}
       />
-      <Button
-        data-testid="conditionCheckOpenBtn"
-        fullWidth
-        variant="contained"
-        color="info"
-        sx={{ marginTop: 1 }}
-        onClick={toggleModalOpen}
-      >
-        Condition Check
+      <Button type="submit" variant="contained" color={submitButtonColor}>
+        {submitButtonText}
       </Button>
+
       <ConditionCheckModal
         visible={modalOpen}
         onClose={toggleModalOpen}

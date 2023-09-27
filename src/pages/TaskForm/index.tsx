@@ -6,7 +6,7 @@ import TaskFormBody from '@/components/task-form/TaskFormBody';
 const Container = styled.div`
   display: flex;
   flex-direction: column;
-  height: 100%;
+  height: calc(100% - 64px);
 `;
 
 const TaskForm = () => {

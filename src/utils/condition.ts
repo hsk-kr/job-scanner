@@ -26,6 +26,9 @@ export const checkJobConditions = (
           break;
       }
 
+      // skip there are no contents to compare
+      if (!text || !targetContent) continue;
+
       // caseInsensitive
       if (subCondition.caseInsensitive) {
         targetContent = targetContent.toLocaleLowerCase();

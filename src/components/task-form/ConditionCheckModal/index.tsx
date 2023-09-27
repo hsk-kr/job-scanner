@@ -130,7 +130,7 @@ const ConditionCheckModal = ({
           data-testid="desc"
           multiline
           fullWidth
-          rows={15}
+          rows={13}
           label="Job Description"
           variant="filled"
           onChange={handleFormChange('description')}
