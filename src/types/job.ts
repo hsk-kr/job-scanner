@@ -9,6 +9,8 @@ export interface JobTask {
   status: JobTaskStatus;
   updatedAt: string;
   delay: number;
+  jobConditions: JobCondition[];
+  logMessage?: string;
 }
 
 export type ConditionTarget = 'title' | 'description';

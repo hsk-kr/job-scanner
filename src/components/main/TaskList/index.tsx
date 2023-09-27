@@ -31,7 +31,7 @@ interface TaskProps {
 }
 
 export interface TaskListProps {
-  tasks: Omit<JobTask, 'delay'>[];
+  tasks: Omit<JobTask, 'delay' | 'jobConditions'>[];
   activeTaskId?: string;
   onEdit?: (id: string) => void;
   onLog?: (id: string) => void;
