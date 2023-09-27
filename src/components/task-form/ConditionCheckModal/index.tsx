@@ -4,6 +4,9 @@ import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
 import CloseIcon from '@mui/icons-material/Close';
 import Button from '@mui/material/Button';
+import { JobCondition } from '@/types/job';
+import { ChangeEvent, useState } from 'react';
+import { checkJobConditions } from '@/utils/condition';
 
 const Container = styled.div`
   position: absolute;
@@ -45,13 +48,65 @@ const ModalFooter = styled.div`
 
 interface ConditionCheckModalProps {
   visible: boolean;
+  jobConditions?: JobCondition[];
   onClose?: VoidFunction;
+}
+
+interface IForm {
+  title: string;
+  description: string;
+}
+
+interface Result {
+  state: 'pass' | 'fail';
+  count: number;
 }
 
 const ConditionCheckModal = ({
   visible,
+  jobConditions = [],
   onClose,
 }: ConditionCheckModalProps) => {
+  const [form, setForm] = useState<IForm>({
+    title: '',
+    description: '',
+  });
+  const [result, setResult] = useState<Result>();
+
+  const handleFormChange =
+    (key: keyof IForm) => (e: ChangeEvent<HTMLInputElement>) => {
+      setForm((prevForm) => ({
+        ...prevForm,
+        [key]: e.target.value,
+      }));
+    };
+
+  const check = () => {
+    const pass = checkJobConditions(
+      form.title,
+      form.description,
+      jobConditions
+    );
+
+    setResult((prevResult) => {
+      let count = (prevResult?.count ?? 0) + 1;
+
+      if (
+        (prevResult?.state === 'pass' && !pass) ||
+        (prevResult?.state === 'fail' && pass)
+      ) {
+        count = 1;
+      }
+
+      const state: Result['state'] = pass ? 'pass' : 'fail';
+
+      return {
+        state,
+        count,
+      };
+    });
+  };
+
   if (!visible) return null;
 
   return (
@@ -63,21 +118,44 @@ const ConditionCheckModal = ({
         </IconButton>
       </ModalHeader>
       <ModalBody>
-        <TextField fullWidth label="Job Title" variant="filled" />
         <TextField
+          data-testid="title"
+          fullWidth
+          label="Job Title"
+          variant="filled"
+          onChange={handleFormChange('title')}
+          value={form.title}
+        />
+        <TextField
+          data-testid="desc"
           multiline
           fullWidth
           rows={15}
           label="Job Description"
           variant="filled"
+          onChange={handleFormChange('description')}
+          value={form.description}
         />
       </ModalBody>
       <ModalFooter>
-        <Typography variant="body2">RESULT:</Typography>
-        <Typography variant="body2" color="primary.main">
-          PASS (2)
-        </Typography>
-        <Button variant="contained" size="small">
+        {result && (
+          <>
+            <Typography variant="body2">RESULT:</Typography>
+            <Typography
+              variant="body2"
+              color={result.state === 'pass' ? 'primary.main' : 'error.main'}
+              sx={{ textTransform: 'uppercase' }}
+            >
+              {`${result.state} (${result.count})`}
+            </Typography>
+          </>
+        )}
+        <Button
+          data-testid="checkBtn"
+          variant="contained"
+          size="small"
+          onClick={check}
+        >
           Check
         </Button>
       </ModalFooter>

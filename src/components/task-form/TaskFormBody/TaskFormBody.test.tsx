@@ -1,22 +1,19 @@
-import { test, describe, expect, vi, beforeEach } from 'vitest';
+import { test, describe, expect, beforeEach } from 'vitest';
 import { act, render, screen, fireEvent } from '@testing-library/react';
 import TaskFormBody from '.';
 
 describe('TaskFormBody', () => {
-  beforeEach(() => {
-    render(<TaskFormBody />);
-  });
-
   test('should open and close the conditional check modal', async () => {
-    const conditionCheckOpenBtn = screen.getByTestId('conditionCheckOpenBtn');
+    const { getByTestId, findByTestId, queryByTestId } = render(
+      <TaskFormBody />
+    );
+    const conditionCheckOpenBtn = getByTestId('conditionCheckOpenBtn');
     conditionCheckOpenBtn.click();
 
-    const conditionCheckModal = await screen.findByTestId(
-      'conditionCheckModal'
-    );
+    const conditionCheckModal = await findByTestId('conditionCheckModal');
     expect(conditionCheckModal).toBeInTheDocument();
 
-    const conditionCheckModalCloseBtn = screen.getByTestId(
+    const conditionCheckModalCloseBtn = getByTestId(
       'conditionCheckModalCloseBtn'
     );
 
@@ -24,7 +21,57 @@ describe('TaskFormBody', () => {
       conditionCheckModalCloseBtn.click();
     });
 
-    expect(screen.queryByTestId('conditionCheckModal')).toBeNull();
+    expect(queryByTestId('conditionCheckModal')).toBeNull();
+  });
+
+  test('should intialize with the initial value prop', () => {
+    const { getByTestId } = render(
+      <TaskFormBody
+        isEdit={true}
+        initialValue={{
+          taskName: 'test task name',
+          delay: 5000,
+          jobConditions: [
+            {
+              id: 'jca',
+              subConditions: [
+                {
+                  id: 'sca',
+                  not: false,
+                  caseInsensitive: true,
+                  operator: '=',
+                  frequency: 5,
+                  target: 'title',
+                  text: 'test',
+                },
+                {
+                  id: 'scb',
+                  not: true,
+                  caseInsensitive: true,
+                  operator: '<=',
+                  frequency: 3,
+                  target: 'description',
+                  text: 'desc',
+                },
+              ],
+            },
+          ],
+        }}
+      />
+    );
+
+    const taskName = getByTestId('taskName').querySelector(
+      'input'
+    ) as HTMLInputElement;
+    expect(taskName.value).toEqual('test task name');
+
+    const delay = getByTestId('delay').querySelector(
+      'input'
+    ) as HTMLInputElement;
+    expect(delay.value).toEqual('5000');
+
+    screen.getByText(/ci, Job Title, =, 5, test/);
+    screen.getByText(/not, ci, Job Description, <=, 3, desc/);
   });
 });
 
@@ -50,9 +97,8 @@ describe('TaskConditionList', () => {
   });
 
   test('should not have a delete button', () => {
-    expect(() => screen.getByTestId('jobConditionRemoveBtn')).toThrowError(
-      /unable to find an element/i
-    );
+    const btn = screen.queryByTestId('jobConditionRemoveBtn');
+    expect(btn).toBeNull();
   });
 
   test('should delete an item', () => {
@@ -75,7 +121,6 @@ describe('TaskConditionList', () => {
 });
 
 describe('TaskConditionListItem', () => {
-  let firstJobCondition: HTMLElement;
   let conditionAddBtn: HTMLButtonElement;
   let not: HTMLInputElement;
   let ci: HTMLInputElement;
@@ -86,7 +131,6 @@ describe('TaskConditionListItem', () => {
 
   beforeEach(() => {
     const { getByTestId } = render(<TaskFormBody />);
-    firstJobCondition = getByTestId('taskConditionListItem');
     conditionAddBtn = getByTestId('conditionAddBtn') as HTMLButtonElement;
     not = getByTestId('not') as HTMLInputElement;
     ci = getByTestId('ci') as HTMLInputElement;

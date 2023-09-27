@@ -14,6 +14,13 @@ import ConditionCheckModal from '../ConditionCheckModal';
 
 interface TaskFormBodyProps {
   isEdit?: boolean;
+  initialValue?: ITaskForm & {
+    jobConditions: ComponentProps<typeof TaskConditionList>['items'];
+  };
+  onSubmit?: (
+    taskForm: ITaskForm,
+    jobConditions: ComponentProps<typeof TaskConditionList>['items']
+  ) => void;
 }
 
 export interface ITaskForm {
@@ -28,7 +35,11 @@ const Form = styled.form`
   position: relative;
 `;
 
-const TaskFormBody = ({ isEdit }: TaskFormBodyProps) => {
+const TaskFormBody = ({
+  isEdit,
+  initialValue,
+  onSubmit,
+}: TaskFormBodyProps) => {
   const {
     register,
     handleSubmit,
@@ -40,8 +51,8 @@ const TaskFormBody = ({ isEdit }: TaskFormBodyProps) => {
   const submitButtonColor = isEdit ? 'warning' : 'primary';
   const submitButtonText = isEdit ? 'Update Task' : 'Create Task';
 
-  const onSubmit: SubmitHandler<ITaskForm> = (data) => {
-    console.log(data);
+  const submitHandler: SubmitHandler<ITaskForm> = (data) => {
+    onSubmit?.(data, jobConditions);
   };
 
   const toggleModalOpen = () => {
@@ -97,15 +108,21 @@ const TaskFormBody = ({ isEdit }: TaskFormBodyProps) => {
   };
 
   useEffect(() => {
-    setJobConditions([{ id: uuidv4(), subConditions: [] }]);
+    if (!initialValue) {
+      setJobConditions([{ id: uuidv4(), subConditions: [] }]);
+    } else {
+      setValue('taskName', initialValue.taskName);
+      setValue('delay', initialValue.delay);
+      setJobConditions(initialValue.jobConditions);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [initialValue]);
 
   return (
     <Form
       onSubmit={(e) => {
         e.preventDefault();
-        void handleSubmit(onSubmit)();
+        void handleSubmit(submitHandler)();
       }}
     >
       <Box display="flex" flexDirection="column" rowGap={2} mt={2}>
@@ -123,6 +140,7 @@ const TaskFormBody = ({ isEdit }: TaskFormBodyProps) => {
               required: 'Task Name is required.',
               maxLength: 12,
             })}
+            data-testid="taskName"
             sx={{ flex: 1 }}
             label="Task Name"
             error={errors.taskName !== undefined}
@@ -141,6 +159,7 @@ const TaskFormBody = ({ isEdit }: TaskFormBodyProps) => {
                   message: 'Delay must be less than or equal to 10000.',
                 },
               })}
+              data-testid="delay"
               sx={{ flex: 1 }}
               label="Delay(ms)"
               type="number"
@@ -174,7 +193,11 @@ const TaskFormBody = ({ isEdit }: TaskFormBodyProps) => {
       >
         Condition Check
       </Button>
-      <ConditionCheckModal visible={modalOpen} onClose={toggleModalOpen} />
+      <ConditionCheckModal
+        visible={modalOpen}
+        onClose={toggleModalOpen}
+        jobConditions={jobConditions}
+      />
     </Form>
   );
 };
