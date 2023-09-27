@@ -1,5 +1,5 @@
-import { useEffect } from 'react';
-import { useForm, SubmitHandler, useFieldArray } from 'react-hook-form';
+import { ComponentProps, useEffect, useState } from 'react';
+import { useForm, SubmitHandler } from 'react-hook-form';
 import { v4 as uuidv4 } from 'uuid';
 import styled from '@emotion/styled';
 import Divider from '@mui/material/Divider';
@@ -19,7 +19,6 @@ interface TaskFormBodyProps {
 export interface ITaskForm {
   taskName: string;
   delay: number;
-  conditions: JobCondition[];
 }
 
 const Form = styled.form`
@@ -34,13 +33,10 @@ const TaskFormBody = ({ isEdit }: TaskFormBodyProps) => {
     register,
     handleSubmit,
     setValue,
-    control,
     formState: { errors },
   } = useForm<ITaskForm>();
-  const { fields, append, remove, update } = useFieldArray({
-    control,
-    name: 'conditions',
-  });
+  const [modalOpen, setModalOpen] = useState(false);
+  const [jobConditions, setJobConditions] = useState<JobCondition[]>([]);
   const submitButtonColor = isEdit ? 'warning' : 'primary';
   const submitButtonText = isEdit ? 'Update Task' : 'Create Task';
 
@@ -48,8 +44,60 @@ const TaskFormBody = ({ isEdit }: TaskFormBodyProps) => {
     console.log(data);
   };
 
+  const toggleModalOpen = () => {
+    setModalOpen((prevModalOpen) => !prevModalOpen);
+  };
+
+  const handleJobConditionAdd: ComponentProps<
+    typeof TaskConditionList
+  >['onJobConditionAdd'] = (jobCondition) => {
+    setJobConditions((prevJobConditions) =>
+      prevJobConditions.concat(jobCondition)
+    );
+  };
+
+  const handleJobConditionRemove: ComponentProps<
+    typeof TaskConditionList
+  >['onJobConditionRemove'] = (jobConditionId) => {
+    setJobConditions((prevJobConditions) =>
+      prevJobConditions.filter((jc) => jc.id !== jobConditionId)
+    );
+  };
+
+  const handleSubConditionAdd: ComponentProps<
+    typeof TaskConditionList
+  >['onSubConditionAdd'] = (jobConditionId, subCondition) => {
+    setJobConditions((prevJobConditions) =>
+      prevJobConditions.map((jc) => {
+        if (jc.id === jobConditionId) {
+          jc.subConditions = jc.subConditions.concat(subCondition);
+          return jc;
+        }
+
+        return jc;
+      })
+    );
+  };
+
+  const handleSubConditionRemove: ComponentProps<
+    typeof TaskConditionList
+  >['onSubConditionRemove'] = (jobConditionId, subConditionId) => {
+    setJobConditions((prevJobConditions) =>
+      prevJobConditions.map((jc) => {
+        if (jc.id === jobConditionId) {
+          jc.subConditions = jc.subConditions.filter(
+            (sc) => sc.id !== subConditionId
+          );
+          return jc;
+        }
+
+        return jc;
+      })
+    );
+  };
+
   useEffect(() => {
-    setValue('conditions', [{ key: uuidv4(), conditions: [] }]);
+    setJobConditions([{ id: uuidv4(), subConditions: [] }]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -110,15 +158,23 @@ const TaskFormBody = ({ isEdit }: TaskFormBodyProps) => {
         Jobs that meet all conditions will be found.
       </Alert>
       <TaskConditionList
-        append={append}
-        fields={fields}
-        remove={remove}
-        update={update}
+        items={jobConditions}
+        onJobConditionAdd={handleJobConditionAdd}
+        onJobConditionRemove={handleJobConditionRemove}
+        onSubConditionAdd={handleSubConditionAdd}
+        onSubConditionRemove={handleSubConditionRemove}
       />
-      <Button fullWidth variant="contained" color="info" sx={{ marginTop: 1 }}>
+      <Button
+        data-testid="conditionCheckOpenBtn"
+        fullWidth
+        variant="contained"
+        color="info"
+        sx={{ marginTop: 1 }}
+        onClick={toggleModalOpen}
+      >
         Condition Check
       </Button>
-      <ConditionCheckModal />
+      <ConditionCheckModal visible={modalOpen} onClose={toggleModalOpen} />
     </Form>
   );
 };

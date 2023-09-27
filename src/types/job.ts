@@ -16,9 +16,9 @@ export type ConditionTarget = 'title' | 'description';
 export type ConditionOperator = '=' | '!=' | '<' | '>' | '<=' | '>=';
 
 export interface JobCondition {
-  key: string;
-  conditions: {
-    key: string;
+  id: string;
+  subConditions: {
+    id: string;
     not: boolean;
     caseInsensitive: boolean;
     target: ConditionTarget;

@@ -1,4 +1,4 @@
-import { ComponentProps, Fragment, useEffect, useState } from 'react';
+import { ComponentProps, Fragment, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
@@ -22,19 +22,18 @@ interface ITaskConditionListItemForm {
   operator: ConditionOperator;
   frequency: number;
   text: string;
-  conditions: JobCondition['conditions'];
 }
 
 interface TaskConditionListItemProps {
-  initialConditions?: JobCondition['conditions'];
+  subConditions: JobCondition['subConditions'];
   deleteHidden?: boolean;
   onDelete?: VoidFunction;
-  onConditionDelete?: (index: number) => void;
-  onConditionAdd?: (condition: JobCondition['conditions'][0]) => void;
+  onConditionDelete?: (id: string) => void;
+  onConditionAdd?: (condition: JobCondition['subConditions'][0]) => void;
 }
 
 const TaskConditionListItem = ({
-  initialConditions,
+  subConditions,
   deleteHidden,
   onDelete,
   onConditionDelete,
@@ -47,11 +46,10 @@ const TaskConditionListItem = ({
     frequency: 1,
     operator: '>=',
     text: '',
-    conditions: [],
   });
 
-  const handleConditionDelete = (index: number) => () => {
-    onConditionDelete?.(index);
+  const handleConditionDelete = (id: string) => () => {
+    onConditionDelete?.(id);
   };
 
   const handleCheckboxChange =
@@ -87,8 +85,8 @@ const TaskConditionListItem = ({
     };
 
   const handleConditionAdd = () => {
-    const condition: JobCondition['conditions'][0] = {
-      key: uuidv4(),
+    const condition: JobCondition['subConditions'][0] = {
+      id: uuidv4(),
       not: form.not ?? false,
       caseInsensitive: form.caseInsensitive ?? false,
       target: form.target ?? 'title',
@@ -103,16 +101,6 @@ const TaskConditionListItem = ({
     onConditionAdd?.(condition);
   };
 
-  useEffect(() => {
-    if (initialConditions === undefined) return;
-
-    setForm((prevForm) => ({
-      ...prevForm,
-      conditions: initialConditions,
-    }));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   return (
     <Box
       p={1}
@@ -120,10 +108,12 @@ const TaskConditionListItem = ({
       flexDirection="column"
       rowGap={1}
       sx={{ backgroundColor: '#eee', borderRadius: 2 }}
+      data-testid="taskConditionListItem"
     >
       <Box display="flex" justifyContent="space-between">
         <FormGroup row>
           <FormControlLabel
+            data-testid="not"
             control={
               <Checkbox
                 onChange={handleCheckboxChange('not')}
@@ -133,6 +123,7 @@ const TaskConditionListItem = ({
             label="Not"
           />
           <FormControlLabel
+            data-testid="ci"
             control={
               <Checkbox
                 onChange={handleCheckboxChange('caseInsensitive')}
@@ -144,6 +135,7 @@ const TaskConditionListItem = ({
         </FormGroup>
         {!deleteHidden && (
           <Button
+            data-testid="jobConditionRemoveBtn"
             color="error"
             size="small"
             variant="contained"
@@ -155,6 +147,7 @@ const TaskConditionListItem = ({
       </Box>
       <FormGroup row sx={{ columnGap: 1 }}>
         <Select
+          data-testid="target"
           sx={{ flex: 1 }}
           size="small"
           onChange={handleSelectChange('target')}
@@ -164,6 +157,7 @@ const TaskConditionListItem = ({
           <MenuItem value="description">Job Description</MenuItem>
         </Select>
         <Select
+          data-testid="operator"
           size="small"
           onChange={handleSelectChange('operator')}
           value={form.operator}
@@ -176,6 +170,7 @@ const TaskConditionListItem = ({
           <MenuItem value="<=">{'<='}</MenuItem>
         </Select>
         <TextField
+          data-testid="frequency"
           sx={{ flex: 1 }}
           label="Frequency"
           type="number"
@@ -187,18 +182,23 @@ const TaskConditionListItem = ({
         />
       </FormGroup>
       <TextField
+        data-testid="text"
         fullWidth
         label="Text"
         onChange={handleTextChange('text')}
         value={form.text}
       />
       <Box display="flex" justifyContent="center">
-        <IconButton size="small" onClick={handleConditionAdd}>
+        <IconButton
+          data-testid="conditionAddBtn"
+          size="small"
+          onClick={handleConditionAdd}
+        >
           <Add />
         </IconButton>
       </Box>
       <Box display="flex" flexDirection="column" rowGap={1}>
-        {form.conditions.map((condition, conditionIdx) => {
+        {subConditions.map((condition, conditionIdx) => {
           let conditionText = '';
           conditionText += condition.not ? 'not, ' : '';
           conditionText += condition.caseInsensitive ? 'ci, ' : '';
@@ -209,15 +209,16 @@ const TaskConditionListItem = ({
           conditionText += `${condition.text}`;
 
           return (
-            <Fragment key={condition.key}>
+            <Fragment key={condition.id}>
               <Tooltip title={conditionText}>
                 <Chip
+                  data-testid="chip"
                   label={conditionText}
                   variant="outlined"
-                  onDelete={handleConditionDelete(conditionIdx)}
+                  onDelete={handleConditionDelete(condition.id)}
                 />
               </Tooltip>
-              {conditionIdx < form.conditions.length - 1 && (
+              {conditionIdx < subConditions.length - 1 && (
                 <Typography
                   variant="body2"
                   color="primary.main"

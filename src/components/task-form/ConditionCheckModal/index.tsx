@@ -43,12 +43,22 @@ const ModalFooter = styled.div`
   }
 `;
 
-const ConditionCheckModal = () => {
+interface ConditionCheckModalProps {
+  visible: boolean;
+  onClose?: VoidFunction;
+}
+
+const ConditionCheckModal = ({
+  visible,
+  onClose,
+}: ConditionCheckModalProps) => {
+  if (!visible) return null;
+
   return (
-    <Container>
+    <Container data-testid="conditionCheckModal">
       <ModalHeader>
         <Typography variant="h6">Condition Checker</Typography>
-        <IconButton>
+        <IconButton onClick={onClose} data-testid="conditionCheckModalCloseBtn">
           <CloseIcon />
         </IconButton>
       </ModalHeader>

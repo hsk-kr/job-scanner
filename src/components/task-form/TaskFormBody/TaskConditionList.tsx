@@ -1,59 +1,51 @@
-import {
-  FieldArrayWithId,
-  UseFieldArrayAppend,
-  UseFieldArrayRemove,
-  UseFieldArrayUpdate,
-} from 'react-hook-form';
 import { v4 as uuidv4 } from 'uuid';
 import Box from '@mui/material/Box';
 import { JobCondition } from '@/types/job';
 import IconButton from '@mui/material/IconButton';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
-import { ITaskForm } from '.';
 import TaskConditionListItem from './TaskConditionListItem';
 
 interface TaskConditionListProps {
-  fields: FieldArrayWithId<ITaskForm, 'conditions', 'id'>[];
-  append: UseFieldArrayAppend<ITaskForm, 'conditions'>;
-  remove: UseFieldArrayRemove;
-  update: UseFieldArrayUpdate<ITaskForm, 'conditions'>;
+  items: JobCondition[];
+  onJobConditionAdd?: (jobCondition: JobCondition) => void;
+  onJobConditionRemove?: (jobXonditionId: string) => void;
+  onSubConditionAdd?: (
+    jobConditionId: string,
+    subCondition: JobCondition['subConditions'][0]
+  ) => void;
+  onSubConditionRemove?: (
+    jobConditionId: string,
+    subConditionId: string
+  ) => void;
 }
 
 const TaskConditionList = ({
-  fields,
-  append,
-  remove,
-  update,
+  items,
+  onJobConditionAdd,
+  onJobConditionRemove,
+  onSubConditionAdd,
+  onSubConditionRemove,
 }: TaskConditionListProps) => {
-  const handleListItemConditionAdd =
-    (index: number) => (condition: JobCondition['conditions'][0]) => {
-      //! TaskConditionListItem is intialized since it leads to the whole item change.
-      update(index, {
-        ...fields[index],
-        conditions: fields[index].conditions.concat(condition),
-      });
+  const handleSubConditionAdd =
+    (jobConditionId: string) =>
+    (condition: JobCondition['subConditions'][0]) => {
+      onSubConditionAdd?.(jobConditionId, condition);
     };
 
-  const handleListItemConditionDelete =
-    (index: number) => (conditionIdx: number) => {
-      //! TaskConditionListItem is intialized since it leads to the whole item change.
-      update(index, {
-        ...fields[index],
-        conditions: fields[index].conditions.filter(
-          (_, idx) => idx !== conditionIdx
-        ),
-      });
+  const handleSubConditionDelete =
+    (jobConditionId: string) => (subConditionId: string) => {
+      onSubConditionRemove?.(jobConditionId, subConditionId);
     };
 
-  const handleConditionAdd = () => {
-    append({
-      key: uuidv4(),
-      conditions: [],
+  const handleJobConditionAdd = () => {
+    onJobConditionAdd?.({
+      id: uuidv4(),
+      subConditions: [],
     });
   };
 
-  const handleConditionDelete = (index: number) => () => {
-    remove(index);
+  const handleJobConditionDelete = (jobConditionId: string) => () => {
+    onJobConditionRemove?.(jobConditionId);
   };
 
   return (
@@ -64,19 +56,24 @@ const TaskConditionList = ({
       p={2}
       sx={{ overflowY: 'auto' }}
       rowGap={2}
+      data-testid="taskConditionList"
     >
-      {fields.map((field, index) => (
+      {items.map((item) => (
         <TaskConditionListItem
-          key={field.id}
-          initialConditions={field.conditions}
-          deleteHidden={fields.length <= 1}
-          onConditionAdd={handleListItemConditionAdd(index)}
-          onConditionDelete={handleListItemConditionDelete(index)}
-          onDelete={handleConditionDelete(index)}
+          key={item.id}
+          deleteHidden={items.length <= 1}
+          onConditionAdd={handleSubConditionAdd(item.id)}
+          onConditionDelete={handleSubConditionDelete(item.id)}
+          onDelete={handleJobConditionDelete(item.id)}
+          subConditions={item.subConditions}
         />
       ))}
       <Box textAlign="center">
-        <IconButton color="primary" onClick={handleConditionAdd}>
+        <IconButton
+          data-testid="jobConditionAddBtn"
+          color="primary"
+          onClick={handleJobConditionAdd}
+        >
           <AddCircleIcon fontSize="large" />
         </IconButton>
       </Box>
