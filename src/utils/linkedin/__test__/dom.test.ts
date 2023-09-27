@@ -76,6 +76,10 @@ describe('JobList Page', () => {
         jobDescription: expect.stringMatching(
           /We are a VC and corporate funded global technology company/
         ),
+        jobAdditionalInfo: expect.stringMatching(
+          /CrateDB · Berlin, Berlin, Germany \(Remote\)/
+        ),
+        url: expect.stringMatching(/http/),
       });
     });
   });

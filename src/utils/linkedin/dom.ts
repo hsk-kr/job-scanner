@@ -5,10 +5,15 @@ export const getJobInfo = (): JobInfo => {
     '.job-details-jobs-unified-top-card__job-title'
   );
   const jobDescription = document.querySelector('#job-details > span');
+  const jobAdddtionalInfo = document.querySelector(
+    '.job-details-jobs-unified-top-card__primary-description'
+  );
 
   return {
     jobTitle: jobTitle?.textContent?.trim() ?? '',
     jobDescription: jobDescription?.textContent?.trim() ?? '',
+    jobAdditionalInfo: jobAdddtionalInfo?.textContent?.trim() ?? '',
+    url: window.location.href,
   };
 };
 

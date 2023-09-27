@@ -1,6 +1,8 @@
 export interface JobInfo {
   jobTitle: string;
   jobDescription: string;
+  jobAdditionalInfo: string;
+  url: string;
 }
 
 export interface JobTask {
@@ -11,6 +13,7 @@ export interface JobTask {
   delay: number;
   jobConditions: JobCondition[];
   logMessage?: string;
+  foundJobs?: JobInfo[];
 }
 
 export type ConditionTarget = 'title' | 'description';
