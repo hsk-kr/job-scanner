@@ -35,6 +35,12 @@ const Form = styled.form`
   position: relative;
 `;
 
+const LinkButton = styled.span`
+  cursor: pointer;
+  text-decoration: underline;
+  color: blue;
+`;
+
 const TaskFormBody = ({
   isEdit,
   initialValue,
@@ -132,6 +138,7 @@ const TaskFormBody = ({
               required: 'Task Name is required.',
               maxLength: 12,
             })}
+            focused
             data-testid="taskName"
             size="small"
             sx={{ flex: 1 }}
@@ -169,13 +176,12 @@ const TaskFormBody = ({
       </Box>
       <Alert severity="info" sx={{ marginBottom: 1 }}>
         Jobs that meet all conditions will be found.{' '}
-        <a
-          href="javascript:void(0)"
+        <LinkButton
           data-testid="conditionCheckOpenLink"
           onClick={toggleModalOpen}
         >
           Click here to test if your conditions meet your expectations.
-        </a>
+        </LinkButton>
       </Alert>
       <TaskConditionList
         items={jobConditions}

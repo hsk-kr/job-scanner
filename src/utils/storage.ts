@@ -4,7 +4,7 @@ import { StorageData } from '@/types/storage';
 
 // When the structure of data is changed, upgrade the version.
 // If you update the version, users will loss their data.
-const STORAGE_VERSION = 'v1';
+export const STORAGE_VERSION = 'v1';
 
 // dependencies: [getTasks]
 export const createTask = async (
@@ -13,15 +13,15 @@ export const createTask = async (
 ) => {
   const tasks = await getTasks();
 
-  // If there are addtional fields besides tasks, they also need to be set.
   await chrome.storage.local.set({
     [STORAGE_VERSION]: {
+      ...(await chrome.storage.local.get([STORAGE_VERSION])),
       tasks: tasks.concat({
         id: uuidv4(),
         status: 'ready',
         taskName: jobTask.taskName,
         delay: jobTask.delay,
-        updatedAt: new Date().toLocaleDateString(),
+        updatedAt: new Date().toLocaleString(),
         jobConditions,
       }),
     },
@@ -29,20 +29,19 @@ export const createTask = async (
 };
 
 // dependencies: [getTasks]
-export const updateTask = async (
-  taskId: string,
-  jobTask: Omit<JobTask, 'id'>
-) => {
+export const updateTask = async (taskId: string, jobTask: Partial<JobTask>) => {
   const tasks = await getTasks();
 
   // If there are addtional fields besides tasks, they also need to be set.
   await chrome.storage.local.set({
     [STORAGE_VERSION]: {
+      ...(await chrome.storage.local.get([STORAGE_VERSION])),
       tasks: tasks.map((task) => {
         if (task.id === taskId) {
           return {
+            ...task,
             ...jobTask,
-            updatedAt: new Date().toLocaleDateString(),
+            updatedAt: new Date().toLocaleString(),
             id: taskId,
           };
         }
@@ -65,6 +64,10 @@ export const getTasks = async () => {
 
   const versionData = await chrome.storage.local.get(STORAGE_VERSION);
   const data = (versionData[STORAGE_VERSION] ?? {}) as StorageData;
+
+  if (!data.tasks) return [];
+
+  data.tasks.sort((a, b) => Date.parse(b.updatedAt) - Date.parse(a.updatedAt));
   return data.tasks ?? [];
 };
 
@@ -75,7 +78,35 @@ export const deleteTask = async (taskId: string) => {
   // If there are addtional fields besides tasks, they also need to be set.
   await chrome.storage.local.set({
     [STORAGE_VERSION]: {
+      ...(await chrome.storage.local.get([STORAGE_VERSION])),
       tasks: tasks.filter((task) => task.id !== taskId),
+    },
+  });
+};
+
+export const startTask = async (taskId: string) => {
+  // If there are addtional fields besides tasks, they also need to be set.
+  const {
+    [STORAGE_VERSION]: { tasks },
+  }: Record<string, StorageData> = await chrome.storage.local.get([
+    STORAGE_VERSION,
+  ]);
+
+  await chrome.storage.local.set({
+    [STORAGE_VERSION]: {
+      tasks: (tasks ?? []).map((task) =>
+        task.id === taskId
+          ? {
+              ...task,
+              status: 'processing',
+            }
+          : task
+      ),
+      activeTask: {
+        numOfFoundJobs: 0,
+        numOfTotalJobs: 0,
+        foubndJobs: [],
+      },
     },
   });
 };
@@ -90,23 +121,29 @@ export const finishTask = async (
   taskId: string,
   data: {
     status: Exclude<JobTaskStatus, 'processing' | 'ready'>;
-    numOfFoundJobs: number;
-    numOfTotalJobs: number;
     message: string;
   }
 ) => {
-  const task = await getTask(taskId);
+  const {
+    [STORAGE_VERSION]: { tasks, activeTask },
+  }: Record<string, StorageData> = await chrome.storage.local.get([
+    STORAGE_VERSION,
+  ]);
 
-  if (!task) return false;
+  const processingTask = await getProcessingTask(tasks ?? []);
+  if (!processingTask) return false;
 
-  task.status = data.status;
-  task.logMessage = `${data.numOfFoundJobs} out of ${data.numOfTotalJobs} Jobs found.\n\n${data.message}`;
+  processingTask.status = data.status;
+  processingTask.logMessage = `${activeTask?.numOfFoundJobs ?? -1} out of ${
+    activeTask?.numOfTotalJobs ?? -1
+  } Jobs found.\n\n${data.message}`;
+  processingTask.foundJobs = activeTask?.foundJobs ?? [];
 
-  await updateTask(taskId, task);
+  await updateTask(taskId, processingTask);
   return true;
 };
 
-export const getProcessingTask = async () => {
-  const tasks = await getTasks();
-  return tasks.find((task) => task.status === 'processing');
+export const getProcessingTask = async (tasks: JobTask[]) => {
+  const _tasks = tasks ?? (await getTasks());
+  return _tasks.find((task) => task.status === 'processing');
 };

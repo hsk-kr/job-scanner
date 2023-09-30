@@ -16,6 +16,12 @@ export interface JobTask {
   foundJobs?: JobInfo[];
 }
 
+export interface ActiveJobTask {
+  numOfFoundJobs: number;
+  numOfTotalJobs: number;
+  foundJobs: JobInfo[];
+}
+
 export type ConditionTarget = 'title' | 'description';
 
 export type ConditionOperator = '=' | '!=' | '<' | '>' | '<=' | '>=';

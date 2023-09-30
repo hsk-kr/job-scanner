@@ -203,15 +203,6 @@ const TaskList = ({
   onTask,
   onAdd,
 }: TaskListProps) => {
-  // const handleTask = (taskId: string) => () => {
-  //   const message =
-  //     taskId === activeTaskId
-  //       ? "Do you really want to stop the task?\nOnce you stop the task, you can't restart the task."
-  //       : 'Do you want to start the task?';
-  //   if (window.confirm(message)) {
-  //     onTask?.(taskId);
-  //   }
-  // };
   const handleTask = (taskId: string) => () => {
     onTask?.(taskId);
   };
@@ -223,21 +214,15 @@ const TaskList = ({
   const handleDelete = (taskId: string) => () => {
     onDelete?.(taskId);
   };
-  // const handleDelete = (taskId: string) => () => {
-  //   if (
-  //     window.confirm(
-  //       "Do you really want to delete the task?\nOnce you delete the task, you can't restore it."
-  //     )
-  //   ) {
-  //     onDelete?.(taskId);
-  //   }
-  // };
+
   const handleDuplicate = (taskId: string) => () => {
     onDuplicate?.(taskId);
   };
+
   const handleEdit = (taskId: string) => () => {
     onEdit?.(taskId);
   };
+
   const handleLog = (taskId: string) => () => {
     onLog?.(taskId);
   };
