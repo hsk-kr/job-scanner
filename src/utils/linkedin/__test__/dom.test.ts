@@ -6,7 +6,7 @@ import {
   getSelectedJobIndex,
   isLoading,
   moveToNextJobList,
-  scrollJobListToBottom,
+  removeHTMLTags,
 } from '../dom';
 import { readFileSync } from 'fs';
 import path from 'path';
@@ -86,7 +86,7 @@ describe('JobList Page', () => {
 
   describe('getJobList', () => {
     test('the length of the jobList array should be 25.', () => {
-      const jobList = getJobList();
+      const [jobList] = getJobList();
 
       expect(jobList.length).toBe(25);
     });
@@ -97,17 +97,6 @@ describe('JobList Page', () => {
       const selectedJobIndex = getSelectedJobIndex();
 
       expect(selectedJobIndex).toBe(3);
-    });
-  });
-
-  describe('scrollJobListToBottom', () => {
-    test('the scroll should be greater than 2000.', () => {
-      scrollJobListToBottom();
-
-      const jobListContainer = document.querySelector(
-        '.jobs-search-results-list'
-      );
-      expect(jobListContainer?.scrollTop).greaterThan(2000);
     });
   });
 
@@ -129,6 +118,13 @@ describe('JobList Page', () => {
   describe('isLoading', () => {
     test('should return false.', () => {
       expect(isLoading()).toBe(false);
+    });
+  });
+
+  describe('removeHTMLTags', () => {
+    test('shuold return string without html tags', () => {
+      expect(removeHTMLTags('<div>hello</div>')).toBe('hello');
+      expect(removeHTMLTags('<span><div>hello</div></span>')).toBe('hello');
     });
   });
 });

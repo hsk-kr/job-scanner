@@ -1,156 +1,148 @@
-// setInterval(() => {
-//   const pages = document.querySelectorAll('ul.artdeco-pagination__pages > li');
-//   console.log('pages', pages);
-//   for (let i = 0; i < pages.length; i++) {
-//     console.log('conains', pages[i].classList.contains('selected'));
-//     if (pages[i].classList.contains('selected')) {
-//       if (i < pages.length - 1) {
-//         const button = pages[i + 1].querySelector('button');
-//         console.log('button', button);
-//         button?.click();
-//       }
-//     }
-//   }
+import { JobInfo } from '@/types/job';
+import { checkJobConditions } from '@/utils/condition';
+import {
+  getJobInfo,
+  getJobList,
+  isLoading,
+  moveToNextJobList,
+  removeHTMLTags,
+  scrollToTheBottom,
+  scrollToTheJobPost,
+} from '@/utils/linkedin/dom';
+import {
+  finishTask,
+  getProcessingTask,
+  updateActiveTask,
+} from '@/utils/storage';
+import { delay } from '@/utils/time';
 
-//   console.log('execute!');
-// }, 4000);
+const genearatorJobPosts = async function* () {
+  const delayUntilDoneLoading = () => {
+    const LOADING_RECHECK_INTERVAL = 200;
+    const MAX_TRY = 30;
+    let cnt = 0;
+    return new Promise<void>((resolve, reject) => {
+      const cb = () => {
+        if (isLoading()) {
+          cnt++;
+          if (cnt > MAX_TRY) {
+            clearInterval(tm);
+            reject('tried over MAX_TRY times.');
+          }
+        } else {
+          clearInterval(tm);
+          resolve();
+        }
+      };
 
-// setTimeout(async () => {
-//   await chrome.tabs.create({
-//     url: 'index.html',
-//   });
-// }, 4000);
+      const tm = setInterval(cb, LOADING_RECHECK_INTERVAL);
+      cb();
+    });
+  };
 
-// console.log('starts!');
-// const globalData: {
-//   placeholderList: chrome.custom.PlaceholderListItem[];
-//   available: boolean;
-// } = {
-//   placeholderList: [],
-//   available: false,
-// };
+  let processingTask = await getProcessingTask();
 
-// function isTextboxEmpty() {
-//   const textareaElmt = document.querySelector('textarea');
-//   return !textareaElmt || textareaElmt.value.length === 0;
-// }
+  while (processingTask) {
+    // There is no task in the progress
+    if (!processingTask) {
+      return {
+        processingTask,
+        value: null,
+      };
+    }
 
-// function scrollToTheBottom() {
-//   const textareaElmt = document.querySelector('textarea');
-//   if (!textareaElmt) {
-//     console.error(`textarea can't be found.`);
-//     return;
-//   }
+    await delay(processingTask.delay);
+    await delayUntilDoneLoading();
+    await scrollToTheBottom(); // to load all job posts.
 
-//   textareaElmt.scrollTop = textareaElmt.scrollHeight;
-// }
+    let [jobList, clickJob] = getJobList();
+    let count = jobList.length;
 
-// function focusOnTextbox() {
-//   const textareaElmt = document.querySelector('textarea');
-//   if (!textareaElmt) {
-//     console.error(`textarea can't be found.`);
-//     return;
-//   }
+    for (let i = 0; i < count; i++) {
+      processingTask = await getProcessingTask();
+      // There is no task in the progress
+      if (!processingTask) {
+        return {
+          processingTask,
+          value: null,
+        };
+      }
 
-//   textareaElmt.focus();
-// }
+      // since it returns visible job list, gets joblist every time.
+      scrollToTheJobPost(jobList[i]);
+      await delayUntilDoneLoading();
 
-// function setTextbox(value: string) {
-//   const textareaElmt = document.querySelector('textarea');
-//   if (!textareaElmt) {
-//     console.error(`textarea can't be found.`);
-//     return;
-//   }
+      [jobList, clickJob] = getJobList();
+      count = jobList.length;
 
-//   textareaElmt.value = value;
-//   // It fires the height resizing event of the input element, the value doesn't matter.
-//   textareaElmt.style.height = '1px';
-// }
+      if (!clickJob(i)) {
+        continue;
+      }
 
-// function isResponseGenerating() {
-//   return document.querySelector('.result-streaming') !== null;
-// }
+      await delay(processingTask.delay);
+      await delayUntilDoneLoading();
 
-// function getActiveChatTitle({ lowercase }: { lowercase?: boolean }) {
-//   let activeTitle = '';
+      const jobInfo = getJobInfo();
+      // Returns jobInfo
+      yield {
+        processingTask,
+        value: jobInfo,
+      };
+    }
 
-//   try {
-//     const titleElmtList = document.querySelectorAll<HTMLLIElement>('nav li');
+    // next page and wait
+    const success = moveToNextJobList();
 
-//     for (const titleElmt of titleElmtList) {
-//       // If the length of buttons is greater than zero, it considers it active.
-//       if (titleElmt.querySelectorAll('button').length > 0) {
-//         activeTitle = titleElmt.innerText;
-//         break;
-//       }
-//     }
-//   } catch (e) {
-//     console.error(e);
-//   }
+    // Last Page
+    if (!success) {
+      return {
+        processingTask,
+        value: null,
+      };
+    }
 
-//   return lowercase ? activeTitle.toLocaleLowerCase() : activeTitle;
-// }
+    await delayUntilDoneLoading();
+    processingTask = await getProcessingTask();
+  }
+};
 
-// function init() {
-//   const startChatDetectionLoop = () => {
-//     setInterval(() => {
-//       if (!globalData.available || !isTextboxEmpty() || isResponseGenerating())
-//         return;
+const CARWL_INTERVAL = 1000;
+const crawlJobPosts = async () => {
+  let numOfTotalJobPosts = 0;
+  const foundJobs: JobInfo[] = [];
+  let taskId = '';
+  for await (const jobPost of genearatorJobPosts()) {
+    taskId = jobPost.processingTask.id;
+    numOfTotalJobPosts++;
 
-//       const title = getActiveChatTitle({
-//         lowercase: true,
-//       });
-//       if (!title) return;
+    if (jobPost.value === null) {
+      break;
+    }
 
-//       for (const placeholder of globalData.placeholderList) {
-//         if (
-//           !placeholder.active ||
-//           !title.includes(placeholder.title.toLocaleLowerCase())
-//         ) {
-//           continue;
-//         }
+    // add a job into the storage
+    if (
+      checkJobConditions(
+        jobPost.value.jobTitle,
+        removeHTMLTags(jobPost.value.jobDescription),
+        jobPost.processingTask.jobConditions
+      )
+    ) {
+      // Remove jobDecsription, the text is too long.
+      foundJobs.push({ ...jobPost.value, jobDescription: '' });
 
-//         setTextbox(placeholder.placeholder);
-//         scrollToTheBottom();
-//         focusOnTextbox();
-//       }
-//     }, INTERVAL);
-//   };
+      await updateActiveTask(numOfTotalJobPosts, foundJobs);
+    }
+  }
 
-//   const loadHandlers = () => {
-//     chrome.storage.onChanged.addListener((changes) => {
-//       for (const [key, { newValue }] of Object.entries(changes)) {
-//         switch (key) {
-//           case 'placeholderList': {
-//             globalData.placeholderList = JSON.parse(
-//               newValue as string
-//             ) as chrome.custom.PlaceholderListItem[];
-//             break;
-//           }
-//           case 'available': {
-//             globalData.available = JSON.parse(newValue as string) as boolean;
-//             break;
-//           }
-//         }
-//       }
-//     });
-//   };
+  if (taskId) {
+    await updateActiveTask(numOfTotalJobPosts, foundJobs);
+    await finishTask(taskId, {
+      status: 'done',
+      message: 'Done job searching.',
+    });
+  }
 
-//   const loadStorageData = async () => {
-//     const dataMap = await chrome.storage.local.get([
-//       'placeholderList',
-//       'available',
-//     ]);
-//     globalData.placeholderList = JSON.parse(
-//       dataMap['placeholderList'] as string
-//     ) as (typeof globalData)['placeholderList'];
-//     globalData.available = JSON.parse(
-//       dataMap['available'] as string
-//     ) as (typeof globalData)['available'];
-//   };
+  setTimeout(crawlJobPosts, CARWL_INTERVAL);
+};
 
-//   // eslint-disable-next-line @typescript-eslint/no-floating-promises
-//   Promise.all([loadStorageData(), loadHandlers(), startChatDetectionLoop()]);
-// }
-
-// init();
+setTimeout(crawlJobPosts, CARWL_INTERVAL);

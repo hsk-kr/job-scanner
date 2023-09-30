@@ -6,6 +6,7 @@ import {
   deleteTask,
   finishTask,
   startTask,
+  STORAGE_VERSION,
 } from '@/utils/storage';
 import { useEffect, useMemo, useState } from 'react';
 
@@ -48,6 +49,16 @@ const useJobTasks = () => {
   };
 
   useEffect(() => {
+    chrome.storage.onChanged.addListener((changes) => {
+      for (const [key] of Object.entries(changes)) {
+        switch (key) {
+          case STORAGE_VERSION:
+            refreshJobTasks();
+            break;
+        }
+      }
+    });
+
     refreshJobTasks();
   }, []);
 

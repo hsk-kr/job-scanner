@@ -17,7 +17,6 @@ export interface JobTask {
 }
 
 export interface ActiveJobTask {
-  numOfFoundJobs: number;
   numOfTotalJobs: number;
   foundJobs: JobInfo[];
 }

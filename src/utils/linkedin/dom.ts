@@ -17,11 +17,26 @@ export const getJobInfo = (): JobInfo => {
   };
 };
 
-export const getJobList = () => {
+export const getJobList = (): [
+  NodeListOf<HTMLLIElement>,
+  (index: number) => boolean
+] => {
   const jobList = document.querySelectorAll<HTMLLIElement>(
     '.jobs-search-results-list > ul > li'
   );
-  return jobList;
+
+  const clickJob = (index: number) => {
+    const jobList = document.querySelectorAll<HTMLLIElement>(
+      '.jobs-search-results-list > ul > li'
+    );
+    const clickableItem =
+      jobList[index].querySelector<HTMLDivElement>('div > div');
+    if (!clickableItem) return false;
+    clickableItem.click();
+    return true;
+  };
+
+  return [jobList, clickJob];
 };
 
 export const getSelectedJobIndex = (
@@ -46,9 +61,43 @@ export const getSelectedJobIndex = (
   return null;
 };
 
-export const scrollJobListToBottom = () => {
+export const scrollToTheJobPost = (target?: HTMLElement) => {
   const jobListContainer = document.querySelector('.jobs-search-results-list');
-  if (jobListContainer) jobListContainer.scrollTop = 10000;
+  if (jobListContainer)
+    jobListContainer.scrollTop =
+      target !== undefined
+        ? jobListContainer.getBoundingClientRect().top +
+            target.getBoundingClientRect().top || 0
+        : jobListContainer.scrollHeight;
+};
+
+export const scrollToTheBottom = (delay = 250) => {
+  return new Promise<void>((resolve) => {
+    let prevScrollTop = 0;
+    let tm: NodeJS.Timeout | undefined = undefined;
+
+    const scroll = () => {
+      const jobListContainer = document.querySelector(
+        '.jobs-search-results-list'
+      );
+      if (!jobListContainer) {
+        clearInterval(tm);
+        resolve();
+        return;
+      }
+
+      prevScrollTop = jobListContainer.scrollTop;
+      jobListContainer.scrollTop += 200;
+
+      if (jobListContainer.scrollTop === prevScrollTop) {
+        resolve();
+        clearInterval(tm);
+        return;
+      }
+    };
+
+    tm = setInterval(scroll, delay);
+  });
 };
 
 export const moveToNextJobList = () => {
@@ -74,4 +123,10 @@ export const isLoading = () => {
   const loading = document.querySelector('#main *[class*=--loading]');
 
   return loading !== null ? true : false;
+};
+
+export const removeHTMLTags = (html: string): string => {
+  if (!html) return '';
+
+  return html.replace(/(<([^>]+)>)/gi, '');
 };

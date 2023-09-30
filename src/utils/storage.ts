@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { JobCondition, JobTask, JobTaskStatus } from '@/types/job';
+import { JobCondition, JobInfo, JobTask, JobTaskStatus } from '@/types/job';
 import { StorageData } from '@/types/storage';
 
 // When the structure of data is changed, upgrade the version.
@@ -32,10 +32,13 @@ export const createTask = async (
 export const updateTask = async (taskId: string, jobTask: Partial<JobTask>) => {
   const tasks = await getTasks();
 
+  const versionData = await chrome.storage.local.get(STORAGE_VERSION);
+  const data = (versionData[STORAGE_VERSION] ?? {}) as StorageData;
+
   // If there are addtional fields besides tasks, they also need to be set.
   await chrome.storage.local.set({
     [STORAGE_VERSION]: {
-      ...(await chrome.storage.local.get([STORAGE_VERSION])),
+      ...data,
       tasks: tasks.map((task) => {
         if (task.id === taskId) {
           return {
@@ -48,6 +51,24 @@ export const updateTask = async (taskId: string, jobTask: Partial<JobTask>) => {
 
         return task;
       }),
+    },
+  });
+};
+
+export const updateActiveTask = async (
+  numOfTotalJobs: number,
+  foundJobs: JobInfo[]
+) => {
+  const versionData = await chrome.storage.local.get(STORAGE_VERSION);
+  const data = (versionData[STORAGE_VERSION] ?? {}) as StorageData;
+
+  await chrome.storage.local.set({
+    [STORAGE_VERSION]: {
+      ...data,
+      activeTask: {
+        numOfTotalJobs,
+        foundJobs,
+      },
     },
   });
 };
@@ -75,10 +96,13 @@ export const getTasks = async () => {
 export const deleteTask = async (taskId: string) => {
   const tasks = await getTasks();
 
+  const versionData = await chrome.storage.local.get(STORAGE_VERSION);
+  const data = (versionData[STORAGE_VERSION] ?? {}) as StorageData;
+
   // If there are addtional fields besides tasks, they also need to be set.
   await chrome.storage.local.set({
     [STORAGE_VERSION]: {
-      ...(await chrome.storage.local.get([STORAGE_VERSION])),
+      ...data,
       tasks: tasks.filter((task) => task.id !== taskId),
     },
   });
@@ -103,7 +127,6 @@ export const startTask = async (taskId: string) => {
           : task
       ),
       activeTask: {
-        numOfFoundJobs: 0,
         numOfTotalJobs: 0,
         foubndJobs: [],
       },
@@ -131,10 +154,11 @@ export const finishTask = async (
   ]);
 
   const processingTask = await getProcessingTask(tasks ?? []);
+
   if (!processingTask) return false;
 
   processingTask.status = data.status;
-  processingTask.logMessage = `${activeTask?.numOfFoundJobs ?? -1} out of ${
+  processingTask.logMessage = `${activeTask?.foundJobs?.length ?? -1} out of ${
     activeTask?.numOfTotalJobs ?? -1
   } Jobs found.\n\n${data.message}`;
   processingTask.foundJobs = activeTask?.foundJobs ?? [];
@@ -143,7 +167,8 @@ export const finishTask = async (
   return true;
 };
 
-export const getProcessingTask = async (tasks: JobTask[]) => {
+// dependencies [getTask]
+export const getProcessingTask = async (tasks?: JobTask[]) => {
   const _tasks = tasks ?? (await getTasks());
   return _tasks.find((task) => task.status === 'processing');
 };

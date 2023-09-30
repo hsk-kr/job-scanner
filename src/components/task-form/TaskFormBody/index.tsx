@@ -146,7 +146,7 @@ const TaskFormBody = ({
             error={errors.taskName !== undefined}
             helperText={errors.taskName?.message}
           />
-          <Tooltip title="Delay before moving on to the next job ad (500ms recommended)">
+          <Tooltip title="Delay before moving on to the next job ad (1000ms recommended)">
             <TextField
               {...register('delay', {
                 required: 'Delay is required.',
@@ -159,6 +159,7 @@ const TaskFormBody = ({
                   message: 'Delay must be less than or equal to 10000.',
                 },
               })}
+              placeholder="1000"
               size="small"
               data-testid="delay"
               sx={{ flex: 1 }}
