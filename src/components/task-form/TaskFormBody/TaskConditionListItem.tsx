@@ -206,7 +206,7 @@ const TaskConditionListItem = ({
             condition.target === 'title' ? 'Job Title, ' : 'Job Description, ';
           conditionText += `${condition.operator}, `;
           conditionText += `${condition.frequency}, `;
-          conditionText += `${condition.text}`;
+          conditionText += `"${condition.text}"`;
 
           return (
             <Fragment key={condition.id}>

@@ -70,8 +70,8 @@ describe('TaskFormBody', () => {
     ) as HTMLInputElement;
     expect(delay.value).toEqual('5000');
 
-    screen.getByText(/ci, Job Title, =, 5, test/);
-    screen.getByText(/not, ci, Job Description, <=, 3, desc/);
+    screen.getByText(/ci, Job Title, =, 5, "test"/);
+    screen.getByText(/not, ci, Job Description, <=, 3, "desc"/);
   });
 });
 
@@ -150,7 +150,7 @@ describe('TaskConditionListItem', () => {
     const chip = await screen.findByTestId('chip');
     expect(chip).toBeInTheDocument();
 
-    expect(chip.textContent).toMatch(/Job Title, >=, 1,/);
+    expect(chip.textContent).toMatch(/Job Title, >=, 1, ""/);
   });
 
   test('should add a subcondition item correctly with input values', async () => {
@@ -159,13 +159,13 @@ describe('TaskConditionListItem', () => {
     fireEvent.change(target, { target: { value: 'description' } });
     fireEvent.change(operator, { target: { value: '=' } });
     fireEvent.change(frequency, { target: { value: '3' } });
-    fireEvent.change(text, { target: { value: 'test' } });
+    fireEvent.change(text, { target: { value: 'test ' } });
     conditionAddBtn.click();
 
     const chip = await screen.findByTestId('chip');
     expect(chip).toBeInTheDocument();
 
-    expect(chip.textContent).toMatch(/not, ci, Job Description, =, 3, test/);
+    expect(chip.textContent).toMatch(/not, ci, Job Description, =, 3, "test "/);
   });
 
   test('should remove a subcondition', () => {

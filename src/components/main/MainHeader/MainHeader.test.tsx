@@ -19,4 +19,15 @@ describe('MainHeader', () => {
 
     expect(handleGithubClick).toHaveBeenCalledOnce();
   });
+
+  test('should fire viewer click event.', () => {
+    const handleViewerClick = vi.fn();
+    const { getByTestId } = render(
+      <MainHeader onViewerClick={handleViewerClick} />
+    );
+    const viewerIcon = getByTestId('viewer');
+    viewerIcon.click();
+
+    expect(handleViewerClick).toHaveBeenCalledOnce();
+  });
 });

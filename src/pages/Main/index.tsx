@@ -6,7 +6,7 @@ import styled from '@emotion/styled';
 import Divider from '@mui/material/Divider';
 import useJobTasks from '@/hooks/useJobTasks';
 import LogViewer from '@/components/main/LogViewer';
-import { useState } from 'react';
+import { ComponentProps, useState } from 'react';
 import { getTask } from '@/utils/storage';
 import { saveJsonAsFile } from '@/utils/file';
 
@@ -15,6 +15,21 @@ const Container = styled.div`
   flex-direction: column;
   height: 100%;
 `;
+
+const tipBannerProps: ComponentProps<typeof RandomTipBanner> = {
+  delay: 5000,
+  tips: [
+    "You should stay on the job list page while it's in progress.",
+    'You can check if your conditions work correctly as you expect.',
+    "Once you stop a job task, you can't restart it.",
+    'If you have any suggestions, click the GitHub icon!',
+    'If you find any errors, let me know on the GitHub repo!',
+    'Use a JSON viewer in the top right corner to view a JSON file on the web.',
+    "Once you delete a job task, you can't restore it.",
+    'You can copy a task to create a new one.',
+    'You can include space characters in the text.',
+  ],
+};
 
 const Main = () => {
   const navigate = useNavigate();
@@ -28,7 +43,7 @@ const Main = () => {
     message: '',
   });
 
-  const openViewer = (taskId: string) => {
+  const openLogViewer = (taskId: string) => {
     const jobTask = jobTasks.find((jobTask) => jobTask.id === taskId);
 
     if (!jobTask) {
@@ -42,12 +57,19 @@ const Main = () => {
     });
   };
 
-  const closeViewer = () => {
+  const closeLogViewer = () => {
     setLogViewer((prevLogViewer) => ({ ...prevLogViewer, visible: false }));
   };
 
   const openGithub = () => {
     window.open('https://github.com/hsk-kr/linkedin-job-scanner', '_blank');
+  };
+
+  const openViewer = () => {
+    window.open(
+      'https://hsk-kr.github.io/job-scanner-json-webviewer/',
+      '_blank'
+    );
   };
 
   const handleTaskEdit = (taskId: string) => {
@@ -106,15 +128,15 @@ const Main = () => {
 
   return (
     <Container>
-      <Header onGithubClick={openGithub} />
-      <RandomTipBanner tips={['tipa', 'tipb']} delay={1000} />
+      <Header onGithubClick={openGithub} onViewerClick={openViewer} />
+      <RandomTipBanner {...tipBannerProps} />
       <Divider />
       <TaskList
         onAdd={handleTaskAdd}
         onEdit={handleTaskEdit}
         onDelete={handleDelete}
         onTask={handleTask}
-        onLog={openViewer}
+        onLog={openLogViewer}
         onDuplicate={handleTaskDuplicate}
         onDownload={handleJsonDownload}
         activeTaskId={activeTask?.id}
@@ -123,7 +145,7 @@ const Main = () => {
       <LogViewer
         visible={logViewer.visible}
         message={logViewer.message}
-        onClose={closeViewer}
+        onClose={closeLogViewer}
       />
     </Container>
   );

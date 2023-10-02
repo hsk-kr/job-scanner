@@ -49,6 +49,8 @@ const useJobTasks = () => {
   };
 
   useEffect(() => {
+    if (!chrome.storage) return;
+
     chrome.storage.onChanged.addListener((changes) => {
       for (const [key] of Object.entries(changes)) {
         switch (key) {

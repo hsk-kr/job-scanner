@@ -111,35 +111,40 @@ const crawlJobPosts = async () => {
   let numOfTotalJobPosts = 0;
   const foundJobs: JobInfo[] = [];
   let taskId = '';
-  for await (const jobPost of genearatorJobPosts()) {
-    taskId = jobPost.processingTask.id;
-    numOfTotalJobPosts++;
 
-    if (jobPost.value === null) {
-      break;
+  try {
+    for await (const jobPost of genearatorJobPosts()) {
+      taskId = jobPost.processingTask.id;
+      numOfTotalJobPosts++;
+
+      if (jobPost.value === null) {
+        break;
+      }
+
+      // add a job into the storage
+      if (
+        checkJobConditions(
+          jobPost.value.jobTitle,
+          removeHTMLTags(jobPost.value.jobDescription),
+          jobPost.processingTask.jobConditions
+        )
+      ) {
+        // Remove jobDecsription, the text is too long.
+        foundJobs.push({ ...jobPost.value, jobDescription: '' });
+
+        await updateActiveTask(numOfTotalJobPosts, foundJobs);
+      }
     }
 
-    // add a job into the storage
-    if (
-      checkJobConditions(
-        jobPost.value.jobTitle,
-        removeHTMLTags(jobPost.value.jobDescription),
-        jobPost.processingTask.jobConditions
-      )
-    ) {
-      // Remove jobDecsription, the text is too long.
-      foundJobs.push({ ...jobPost.value, jobDescription: '' });
-
+    if (taskId) {
       await updateActiveTask(numOfTotalJobPosts, foundJobs);
+      await finishTask(taskId, {
+        status: 'done',
+        message: 'Done job searching.',
+      });
     }
-  }
-
-  if (taskId) {
-    await updateActiveTask(numOfTotalJobPosts, foundJobs);
-    await finishTask(taskId, {
-      status: 'done',
-      message: 'Done job searching.',
-    });
+  } catch (e) {
+    console.error(e);
   }
 
   setTimeout(crawlJobPosts, CARWL_INTERVAL);

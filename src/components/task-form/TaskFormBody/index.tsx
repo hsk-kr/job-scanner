@@ -136,7 +136,10 @@ const TaskFormBody = ({
           <TextField
             {...register('taskName', {
               required: 'Task Name is required.',
-              maxLength: 12,
+              maxLength: {
+                value: 12,
+                message: 'The name must be less than 13 characters.',
+              },
             })}
             focused
             data-testid="taskName"
@@ -146,20 +149,19 @@ const TaskFormBody = ({
             error={errors.taskName !== undefined}
             helperText={errors.taskName?.message}
           />
-          <Tooltip title="Delay before moving on to the next job ad (1000ms recommended)">
+          <Tooltip title="Delay before moving on to the next job ad (2000ms recommended)">
             <TextField
               {...register('delay', {
                 required: 'Delay is required.',
                 min: {
-                  value: 250,
-                  message: 'Delay must be greater than or equal to 250.',
+                  value: 1000,
+                  message: 'Delay must be greater than or equal to 1000.',
                 },
                 max: {
                   value: 10000,
                   message: 'Delay must be less than or equal to 10000.',
                 },
               })}
-              placeholder="1000"
               size="small"
               data-testid="delay"
               sx={{ flex: 1 }}
