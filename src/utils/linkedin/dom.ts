@@ -120,7 +120,9 @@ export const moveToNextJobList = () => {
 };
 
 export const isLoading = () => {
-  const loading = document.querySelector('#main *[class*=--loading]');
+  const loading =
+    document.querySelector('#main *[class*=--loading]') ??
+    document.querySelector('.jobs-ghost-fadein-placeholder');
 
   return loading !== null ? true : false;
 };
