@@ -4,7 +4,12 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import TaskFormBody from '@/components/task-form/TaskFormBody';
 import useJobTasks from '@/hooks/useJobTasks';
 import { ComponentProps, useEffect, useState } from 'react';
-import { getTask } from '@/utils/storage';
+import {
+  clearDraftTaskFormData,
+  draftTaskFormData,
+  getTask,
+  loadDraftTaskFormData,
+} from '@/utils/storage';
 
 const Container = styled.div`
   display: flex;
@@ -22,12 +27,17 @@ const TaskForm = () => {
     searchParams.get('id') !== null && searchParams.get('isEdit') === 'true';
   const taskId = searchParams.get('id');
 
-  const back = () => navigate(-1);
+  const back = async () => {
+    await clearDraftTaskFormData();
+    navigate(-1);
+  };
 
-  const handleSubmit: ComponentProps<typeof TaskFormBody>['onSubmit'] = (
+  const handleSubmit: ComponentProps<typeof TaskFormBody>['onSubmit'] = async (
     form,
     jobConditions
   ) => {
+    await clearDraftTaskFormData();
+
     const task = {
       taskName: form.taskName,
       delay: form.delay,
@@ -35,27 +45,46 @@ const TaskForm = () => {
     };
 
     if (isEdit && taskId) {
-      updateJobTask(taskId, { ...task, status: 'ready' }).then(() =>
-        navigate('/')
-      );
+      await updateJobTask(taskId, { ...task, status: 'ready' });
     } else {
-      createJobTask(task, jobConditions).then(() => navigate('/'));
+      await createJobTask(task, jobConditions);
     }
+
+    navigate('/');
+  };
+
+  const saveDraftTaskFormData: ComponentProps<
+    typeof TaskFormBody
+  >['onDataChange'] = (value) => {
+    draftTaskFormData({
+      taskId,
+      isEdit,
+      value,
+    });
   };
 
   useEffect(() => {
-    if (!taskId) return;
-
     const loadTask = async () => {
-      const task = await getTask(taskId);
+      const draftData = await loadDraftTaskFormData();
 
-      if (!task) return;
+      if (draftData) {
+        // if there is saved task form data, load that
+        setInitialValue({
+          taskName: draftData.value.taskName ?? '',
+          delay: draftData.value.delay ?? '',
+          jobConditions: draftData.value.jobConditions ?? [],
+        });
+      } else if (taskId) {
+        const task = await getTask(taskId);
 
-      setInitialValue({
-        taskName: task.taskName,
-        delay: task.delay,
-        jobConditions: task.jobConditions,
-      });
+        if (!task) return;
+
+        setInitialValue({
+          taskName: task.taskName,
+          delay: task.delay,
+          jobConditions: task.jobConditions,
+        });
+      }
     };
 
     loadTask();
@@ -67,6 +96,7 @@ const TaskForm = () => {
       <TaskFormBody
         isEdit={isEdit}
         initialValue={initialValue}
+        onDataChange={saveDraftTaskFormData}
         onSubmit={handleSubmit}
       />
     </Container>

@@ -1,5 +1,11 @@
 import { test, describe, expect, beforeEach } from 'vitest';
-import { act, render, screen, fireEvent } from '@testing-library/react';
+import {
+  act,
+  render,
+  screen,
+  fireEvent,
+  waitFor,
+} from '@testing-library/react';
 import TaskFormBody from '.';
 
 describe('TaskFormBody', () => {
@@ -24,7 +30,7 @@ describe('TaskFormBody', () => {
     expect(queryByTestId('conditionCheckModal')).toBeNull();
   });
 
-  test('should intialize with the initial value prop', () => {
+  test('should intialize with the initial value prop', async () => {
     const { getByTestId } = render(
       <TaskFormBody
         isEdit={true}
@@ -63,7 +69,9 @@ describe('TaskFormBody', () => {
     const taskName = getByTestId('taskName').querySelector(
       'input'
     ) as HTMLInputElement;
-    expect(taskName.value).toEqual('test task name');
+    await waitFor(() => {
+      expect(taskName.value).toEqual('test task name');
+    });
 
     const delay = getByTestId('delay').querySelector(
       'input'
@@ -130,22 +138,28 @@ describe('TaskConditionListItem', () => {
   let text: HTMLInputElement;
   let formVisibleToggleBtn: HTMLButtonElement;
 
-  beforeEach(() => {
-    const { getByTestId } = render(<TaskFormBody />);
-    conditionAddBtn = getByTestId('conditionAddBtn') as HTMLButtonElement;
-    not = getByTestId('not') as HTMLInputElement;
-    ci = getByTestId('ci') as HTMLInputElement;
-    target = getByTestId('target').querySelector('input') as HTMLInputElement;
-    operator = getByTestId('operator').querySelector(
+  beforeEach(async () => {
+    const { findByTestId } = render(<TaskFormBody />);
+    conditionAddBtn = (await findByTestId(
+      'conditionAddBtn'
+    )) as HTMLButtonElement;
+    not = (await findByTestId('not')) as HTMLInputElement;
+    ci = (await findByTestId('ci')) as HTMLInputElement;
+    target = (await findByTestId('target')).querySelector(
       'input'
     ) as HTMLInputElement;
-    frequency = getByTestId('frequency').querySelector(
+    operator = (await findByTestId('operator')).querySelector(
       'input'
     ) as HTMLInputElement;
-    text = getByTestId('text').querySelector('input') as HTMLInputElement;
-    formVisibleToggleBtn = getByTestId(
+    frequency = (await findByTestId('frequency')).querySelector(
+      'input'
+    ) as HTMLInputElement;
+    text = (await findByTestId('text')).querySelector(
+      'input'
+    ) as HTMLInputElement;
+    formVisibleToggleBtn = (await findByTestId(
       'formVisibleToggleBtn'
-    ) as HTMLButtonElement;
+    )) as HTMLButtonElement;
   });
 
   test('should add a subcondition item with default values', async () => {

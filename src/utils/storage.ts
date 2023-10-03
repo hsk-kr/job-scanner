@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import { JobCondition, JobInfo, JobTask, JobTaskStatus } from '@/types/job';
-import { StorageData } from '@/types/storage';
+import { StorageData, TaskFormDraft } from '@/types/storage';
 
 // When the structure of data is changed, upgrade the version.
 // If you update the version, users will loss their data.
@@ -100,7 +100,7 @@ export const getTask = async (taskId: string) => {
 };
 
 export const getTasks = async () => {
-  if (!chrome?.storage?.local) return [];
+  if (!window.chrome?.storage?.local) return [];
 
   const versionData = await chrome.storage.local.get(STORAGE_VERSION);
   const data = (versionData[STORAGE_VERSION] ?? {}) as StorageData;
@@ -118,7 +118,6 @@ export const deleteTask = async (taskId: string) => {
   const versionData = await chrome.storage.local.get(STORAGE_VERSION);
   const data = (versionData[STORAGE_VERSION] ?? {}) as StorageData;
 
-  // If there are addtional fields besides tasks, they also need to be set.
   await chrome.storage.local.set({
     [STORAGE_VERSION]: {
       ...data,
@@ -128,16 +127,13 @@ export const deleteTask = async (taskId: string) => {
 };
 
 export const startTask = async (taskId: string) => {
-  // If there are addtional fields besides tasks, they also need to be set.
-  const {
-    [STORAGE_VERSION]: { tasks },
-  }: Record<string, StorageData> = await chrome.storage.local.get([
-    STORAGE_VERSION,
-  ]);
+  const versionData = await chrome.storage.local.get(STORAGE_VERSION);
+  const data = (versionData[STORAGE_VERSION] ?? {}) as StorageData;
 
   await chrome.storage.local.set({
     [STORAGE_VERSION]: {
-      tasks: (tasks ?? []).map((task) =>
+      ...data,
+      tasks: (data.tasks ?? []).map((task) =>
         task.id === taskId
           ? {
               ...task,
@@ -191,3 +187,38 @@ export const getProcessingTask = async (tasks?: JobTask[]) => {
   const _tasks = tasks ?? (await getTasks());
   return _tasks.find((task) => task.status === 'processing');
 };
+
+export const clearDraftTaskFormData = async () => {
+  if (!window.chrome?.storage?.local) return;
+  const versionData = await chrome.storage.local.get(STORAGE_VERSION);
+  const data = (versionData[STORAGE_VERSION] ?? {}) as StorageData;
+
+  await chrome.storage.local.set({
+    [STORAGE_VERSION]: {
+      ...data,
+      draft: undefined,
+    },
+  });
+};
+
+export const draftTaskFormData = async (draftData: TaskFormDraft) => {
+  if (!window.chrome?.storage?.local) return;
+  const versionData = await chrome.storage.local.get(STORAGE_VERSION);
+  const data = (versionData[STORAGE_VERSION] ?? {}) as StorageData;
+
+  await chrome.storage.local.set({
+    [STORAGE_VERSION]: {
+      ...data,
+      draft: draftData,
+    },
+  });
+};
+
+export const loadDraftTaskFormData =
+  async (): Promise<TaskFormDraft | null> => {
+    if (!window.chrome?.storage?.local) return null;
+    const versionData = await chrome.storage.local.get(STORAGE_VERSION);
+    const data = (versionData[STORAGE_VERSION] ?? {}) as StorageData;
+
+    return data.draft ?? null;
+  };

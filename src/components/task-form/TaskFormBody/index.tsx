@@ -12,11 +12,14 @@ import { JobCondition } from '@/types/job';
 import TaskConditionList from './TaskConditionList';
 import ConditionCheckModal from '../ConditionCheckModal';
 
+type Value = ITaskForm & {
+  jobConditions: ComponentProps<typeof TaskConditionList>['items'];
+};
+
 interface TaskFormBodyProps {
   isEdit?: boolean;
-  initialValue?: ITaskForm & {
-    jobConditions: ComponentProps<typeof TaskConditionList>['items'];
-  };
+  initialValue?: Value;
+  onDataChange?: (value: Value) => void;
   onSubmit?: (
     taskForm: ITaskForm,
     jobConditions: ComponentProps<typeof TaskConditionList>['items']
@@ -45,11 +48,14 @@ const TaskFormBody = ({
   isEdit,
   initialValue,
   onSubmit,
+  onDataChange,
 }: TaskFormBodyProps) => {
   const {
     register,
     handleSubmit,
+    getValues,
     setValue,
+    watch,
     formState: { errors },
   } = useForm<ITaskForm>();
   const [modalOpen, setModalOpen] = useState(false);
@@ -121,8 +127,21 @@ const TaskFormBody = ({
       setValue('delay', initialValue.delay);
       setJobConditions(initialValue.jobConditions);
     }
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialValue]);
+
+  const { taskName, delay } = watch();
+  useEffect(() => {
+    const values = getValues();
+
+    onDataChange?.({
+      taskName: values.taskName,
+      delay: values.delay,
+      jobConditions,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [taskName, delay, jobConditions]);
 
   return (
     <Form
@@ -196,7 +215,6 @@ const TaskFormBody = ({
       <Button type="submit" variant="contained" color={submitButtonColor}>
         {submitButtonText}
       </Button>
-
       <ConditionCheckModal
         visible={modalOpen}
         onClose={toggleModalOpen}

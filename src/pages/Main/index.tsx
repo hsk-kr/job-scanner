@@ -9,6 +9,7 @@ import LogViewer from '@/components/main/LogViewer';
 import { ComponentProps, useState } from 'react';
 import { getTask } from '@/utils/storage';
 import { saveJsonAsFile } from '@/utils/file';
+import RedirectDraftPage from '@/components/RedirectDraftPage';
 
 const Container = styled.div`
   display: flex;
@@ -134,6 +135,7 @@ const Main = () => {
 
   return (
     <Container>
+      <RedirectDraftPage />
       <Header onGithubClick={openGithub} onViewerClick={openViewer} />
       <RandomTipBanner {...tipBannerProps} />
       <Divider />
