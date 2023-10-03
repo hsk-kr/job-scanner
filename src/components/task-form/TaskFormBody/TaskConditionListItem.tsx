@@ -14,6 +14,8 @@ import IconButton from '@mui/material/IconButton';
 import Add from '@mui/icons-material/Add';
 import Chip from '@mui/material/Chip';
 import Typography from '@mui/material/Typography';
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 
 interface ITaskConditionListItemForm {
   not: boolean;
@@ -47,6 +49,10 @@ const TaskConditionListItem = ({
     operator: '>=',
     text: '',
   });
+  const [formVisible, setFormVisible] = useState(true);
+
+  const toggleFormVisible = () =>
+    setFormVisible((prevFormVisible) => !prevFormVisible);
 
   const handleConditionDelete = (id: string) => () => {
     onConditionDelete?.(id);
@@ -111,28 +117,40 @@ const TaskConditionListItem = ({
       data-testid="taskConditionListItem"
     >
       <Box display="flex" justifyContent="space-between">
-        <FormGroup row>
-          <FormControlLabel
-            data-testid="not"
-            control={
-              <Checkbox
-                onChange={handleCheckboxChange('not')}
-                value={form.not}
+        <FormGroup row sx={{ width: '100%' }}>
+          {formVisible && (
+            <>
+              <FormControlLabel
+                data-testid="not"
+                control={
+                  <Checkbox
+                    size="small"
+                    onChange={handleCheckboxChange('not')}
+                    value={form.not}
+                  />
+                }
+                label="Not"
               />
-            }
-            label="Not"
-          />
-          <FormControlLabel
-            data-testid="ci"
-            control={
-              <Checkbox
-                onChange={handleCheckboxChange('caseInsensitive')}
-                value={form.caseInsensitive}
+              <FormControlLabel
+                data-testid="ci"
+                control={
+                  <Checkbox
+                    size="small"
+                    onChange={handleCheckboxChange('caseInsensitive')}
+                    value={form.caseInsensitive}
+                  />
+                }
+                label="Case insensitive"
               />
-            }
-            label="Case insensitive"
-          />
+            </>
+          )}
         </FormGroup>
+        <IconButton
+          onClick={toggleFormVisible}
+          data-testid="formVisibleToggleBtn"
+        >
+          {formVisible ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
+        </IconButton>
         {!deleteHidden && (
           <Button
             data-testid="jobConditionRemoveBtn"
@@ -145,58 +163,62 @@ const TaskConditionListItem = ({
           </Button>
         )}
       </Box>
-      <FormGroup row sx={{ columnGap: 1 }}>
-        <Select
-          data-testid="target"
-          sx={{ flex: 1 }}
-          size="small"
-          onChange={handleSelectChange('target')}
-          value={form.target}
-        >
-          <MenuItem value="title">Job Title</MenuItem>
-          <MenuItem value="description">Job Description</MenuItem>
-        </Select>
-        <Select
-          data-testid="operator"
-          size="small"
-          onChange={handleSelectChange('operator')}
-          value={form.operator}
-        >
-          <MenuItem value="=">=</MenuItem>
-          <MenuItem value="!=">!=</MenuItem>
-          <MenuItem value="<">{'<'}</MenuItem>
-          <MenuItem value=">">{'>'}</MenuItem>
-          <MenuItem value=">=">{'>='}</MenuItem>
-          <MenuItem value="<=">{'<='}</MenuItem>
-        </Select>
-        <TextField
-          data-testid="frequency"
-          sx={{ flex: 1 }}
-          label="Frequency"
-          type="number"
-          InputLabelProps={{
-            shrink: true,
-          }}
-          onChange={handleTextChange('frequency')}
-          value={form.frequency}
-        />
-      </FormGroup>
-      <TextField
-        data-testid="text"
-        fullWidth
-        label="Text"
-        onChange={handleTextChange('text')}
-        value={form.text}
-      />
-      <Box display="flex" justifyContent="center">
-        <IconButton
-          data-testid="conditionAddBtn"
-          size="small"
-          onClick={handleConditionAdd}
-        >
-          <Add />
-        </IconButton>
-      </Box>
+      {formVisible && (
+        <>
+          <FormGroup row sx={{ columnGap: 1 }}>
+            <Select
+              data-testid="target"
+              sx={{ flex: 1 }}
+              size="small"
+              onChange={handleSelectChange('target')}
+              value={form.target}
+            >
+              <MenuItem value="title">Job Title</MenuItem>
+              <MenuItem value="description">Job Description</MenuItem>
+            </Select>
+            <Select
+              data-testid="operator"
+              size="small"
+              onChange={handleSelectChange('operator')}
+              value={form.operator}
+            >
+              <MenuItem value="=">=</MenuItem>
+              <MenuItem value="!=">!=</MenuItem>
+              <MenuItem value="<">{'<'}</MenuItem>
+              <MenuItem value=">">{'>'}</MenuItem>
+              <MenuItem value=">=">{'>='}</MenuItem>
+              <MenuItem value="<=">{'<='}</MenuItem>
+            </Select>
+            <TextField
+              data-testid="frequency"
+              sx={{ flex: 1 }}
+              label="Frequency"
+              type="number"
+              InputLabelProps={{
+                shrink: true,
+              }}
+              onChange={handleTextChange('frequency')}
+              value={form.frequency}
+            />
+          </FormGroup>
+          <TextField
+            data-testid="text"
+            fullWidth
+            label="Text"
+            onChange={handleTextChange('text')}
+            value={form.text}
+          />
+          <Box display="flex" justifyContent="center">
+            <IconButton
+              data-testid="conditionAddBtn"
+              size="small"
+              onClick={handleConditionAdd}
+            >
+              <Add />
+            </IconButton>
+          </Box>
+        </>
+      )}
       <Box display="flex" flexDirection="column" rowGap={1}>
         {subConditions.map((condition, conditionIdx) => {
           let conditionText = '';

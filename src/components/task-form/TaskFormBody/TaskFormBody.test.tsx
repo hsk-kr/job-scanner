@@ -128,6 +128,7 @@ describe('TaskConditionListItem', () => {
   let operator: HTMLInputElement;
   let frequency: HTMLInputElement;
   let text: HTMLInputElement;
+  let formVisibleToggleBtn: HTMLButtonElement;
 
   beforeEach(() => {
     const { getByTestId } = render(<TaskFormBody />);
@@ -142,6 +143,9 @@ describe('TaskConditionListItem', () => {
       'input'
     ) as HTMLInputElement;
     text = getByTestId('text').querySelector('input') as HTMLInputElement;
+    formVisibleToggleBtn = getByTestId(
+      'formVisibleToggleBtn'
+    ) as HTMLButtonElement;
   });
 
   test('should add a subcondition item with default values', async () => {
@@ -184,5 +188,35 @@ describe('TaskConditionListItem', () => {
 
     subConditions = screen.getAllByTestId('chip');
     expect(subConditions).toHaveLength(1);
+  });
+
+  test('should be invisible of the form', () => {
+    act(() => {
+      formVisibleToggleBtn.click();
+    });
+
+    expect(screen.queryByTestId('not')).toBe(null);
+    expect(screen.queryByTestId('ci')).toBe(null);
+    expect(screen.queryByTestId('target')).toBe(null);
+    expect(screen.queryByTestId('operator')).toBe(null);
+    expect(screen.queryByTestId('frequency')).toBe(null);
+    expect(screen.queryByTestId('text')).toBe(null);
+  });
+
+  test('should be visible of the form', () => {
+    act(() => {
+      formVisibleToggleBtn.click();
+    });
+
+    act(() => {
+      formVisibleToggleBtn.click();
+    });
+
+    expect(screen.queryByTestId('not')).not.toBe(null);
+    expect(screen.queryByTestId('ci')).not.toBe(null);
+    expect(screen.queryByTestId('target')).not.toBe(null);
+    expect(screen.queryByTestId('operator')).not.toBe(null);
+    expect(screen.queryByTestId('frequency')).not.toBe(null);
+    expect(screen.queryByTestId('text')).not.toBe(null);
   });
 });
