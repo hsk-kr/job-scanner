@@ -73,6 +73,25 @@ export const updateActiveTask = async (
   });
 };
 
+export const addUpActiveTask = async (
+  numOfJobPostsHaveSeen: number,
+  jobsHaveFound: JobInfo[]
+) => {
+  const versionData = await chrome.storage.local.get(STORAGE_VERSION);
+  const data = (versionData[STORAGE_VERSION] ?? {}) as StorageData;
+
+  await chrome.storage.local.set({
+    [STORAGE_VERSION]: {
+      ...data,
+      activeTask: {
+        numOfTotalJobs:
+          (data.activeTask?.numOfTotalJobs ?? 0) + numOfJobPostsHaveSeen,
+        foundJobs: (data.activeTask?.foundJobs ?? []).concat(jobsHaveFound),
+      },
+    },
+  });
+};
+
 // dependencies: [getTasks]
 export const getTask = async (taskId: string) => {
   const tasks = await getTasks();

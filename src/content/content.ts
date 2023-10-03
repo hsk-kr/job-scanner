@@ -10,9 +10,9 @@ import {
   scrollToTheJobPost,
 } from '@/utils/linkedin/dom';
 import {
+  addUpActiveTask,
   finishTask,
   getProcessingTask,
-  updateActiveTask,
 } from '@/utils/storage';
 import { delay } from '@/utils/time';
 
@@ -27,7 +27,7 @@ const genearatorJobPosts = async function* () {
           cnt++;
           if (cnt > MAX_TRY) {
             clearInterval(tm);
-            reject('tried over MAX_TRY times.');
+            reject(`tried over MAX_TRY(${MAX_TRY}) times.`);
           }
         } else {
           clearInterval(tm);
@@ -108,14 +108,14 @@ const genearatorJobPosts = async function* () {
 
 const CARWL_INTERVAL = 1000;
 const crawlJobPosts = async () => {
-  let numOfTotalJobPosts = 0;
-  const foundJobs: JobInfo[] = [];
+  let numOfJobPostsHaveSeen = 0;
+  let jobsHaveFound: JobInfo[] = [];
   let taskId = '';
 
   try {
     for await (const jobPost of genearatorJobPosts()) {
       taskId = jobPost.processingTask.id;
-      numOfTotalJobPosts++;
+      numOfJobPostsHaveSeen++;
 
       if (jobPost.value === null) {
         break;
@@ -130,14 +130,16 @@ const crawlJobPosts = async () => {
         )
       ) {
         // Remove jobDecsription, the text is too long.
-        foundJobs.push({ ...jobPost.value, jobDescription: '' });
+        jobsHaveFound.push({ ...jobPost.value, jobDescription: '' });
 
-        await updateActiveTask(numOfTotalJobPosts, foundJobs);
+        await addUpActiveTask(numOfJobPostsHaveSeen, jobsHaveFound);
+        numOfJobPostsHaveSeen = 0;
+        jobsHaveFound = [];
       }
     }
 
     if (taskId) {
-      await updateActiveTask(numOfTotalJobPosts, foundJobs);
+      await addUpActiveTask(numOfJobPostsHaveSeen, jobsHaveFound);
       await finishTask(taskId, {
         status: 'done',
         message: 'Done job searching.',
