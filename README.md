@@ -12,6 +12,8 @@ I will respond as soon as possible.
 
 ## How To Use
 
+[![Watch the video](https://img.youtube.com/vi/SbgCQaQ6fzI/default.jpg)](https://www.youtube.com/watch?v=SbgCQaQ6fzI)
+
 ## How To Run (dev)
 
 1. install packages with a package manager you prefer
