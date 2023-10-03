@@ -112,7 +112,7 @@ const Main = () => {
     }
   };
 
-  const handleJsonDownload = (taskId: string) => {
+  const handleJsonDownload = (taskId: string, taskName: string) => {
     const download = async () => {
       const task = await getTask(taskId);
       if (!task) {
@@ -120,7 +120,13 @@ const Main = () => {
         return;
       }
 
-      saveJsonAsFile(`${taskId}.json`, task.foundJobs);
+      const currentDate = new Date();
+      const dateStr = `${currentDate.getFullYear()}${(
+        currentDate.getMonth() + 1
+      )
+        .toString()
+        .padStart(2, '0')}${currentDate.getDate().toString().padStart(2, '0')}`;
+      saveJsonAsFile(`${taskName}-${dateStr}`, task.foundJobs);
     };
 
     download();

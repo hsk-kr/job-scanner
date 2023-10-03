@@ -38,7 +38,7 @@ export interface TaskListProps {
   onTask?: (id: string) => void;
   onDelete?: (id: string) => void;
   onDuplicate?: (id: string) => void;
-  onDownload?: (id: string) => void;
+  onDownload?: (id: string, taskName: string) => void;
   onAdd?: VoidFunction;
 }
 
@@ -207,8 +207,8 @@ const TaskList = ({
     onTask?.(taskId);
   };
 
-  const handleDownload = (taskId: string) => () => {
-    onDownload?.(taskId);
+  const handleDownload = (taskId: string, taskName: string) => () => {
+    onDownload?.(taskId, taskName);
   };
 
   const handleDelete = (taskId: string) => () => {
@@ -257,7 +257,7 @@ const TaskList = ({
           createdAt={task.updatedAt}
           onTask={handleTask(task.id)}
           onDelete={handleDelete(task.id)}
-          onDownload={handleDownload(task.id)}
+          onDownload={handleDownload(task.id, task.taskName)}
           onDuplicate={handleDuplicate(task.id)}
           onEdit={handleEdit(task.id)}
           onLog={handleLog(task.id)}
