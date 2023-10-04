@@ -146,6 +146,7 @@ const crawlJobPosts = async () => {
       });
     }
   } catch (e) {
+    await addUpActiveTask(numOfJobPostsHaveSeen, jobsHaveFound);
     console.error(e);
   }
 
