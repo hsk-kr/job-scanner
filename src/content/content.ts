@@ -75,12 +75,42 @@ const genearatorJobPosts = async function* () {
       [jobList, clickJob] = getJobList();
       count = jobList.length;
 
+      // When the div of a job post is not usual, skip the job post.
       if (!clickJob(i)) {
         continue;
       }
 
       await delay(processingTask.delay);
-      await delayUntilDoneLoading();
+
+      // Sometimes, loading of the job post doesn't finish,
+      // when it happens, click another item then click back to the item.
+      try {
+        await delayUntilDoneLoading();
+      } catch {
+        // if the job post is the only one in the job list, refresh it.
+        if (count === 1) {
+          window.location.reload();
+          return;
+        }
+
+        // click another post
+        let isNormalJobPost: boolean;
+        if (i === 0) {
+          isNormalJobPost = clickJob(1);
+        } else {
+          isNormalJobPost = clickJob(0);
+        }
+
+        if (!isNormalJobPost) {
+          window.location.reload();
+          return;
+        }
+
+        // it will increase i by 1 and will come back to this job post in the next step.
+        i--;
+        await delay(processingTask.delay);
+        continue;
+      }
 
       const jobInfo = getJobInfo();
       // Returns jobInfo
