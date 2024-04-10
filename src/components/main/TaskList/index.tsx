@@ -245,6 +245,7 @@ const TaskList = ({
           data-testid="addBtn"
           color="error"
           variant="contained"
+          disabled={activeTaskId !== undefined}
           onClick={onDeleteAllTasks}
         >
           Delete All Tasks
