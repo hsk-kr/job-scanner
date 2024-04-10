@@ -242,7 +242,7 @@ const TaskList = ({
     >
       <Stack direction="row" columnGap={1} justifyContent="flex-end" mb={1}>
         <Button
-          data-testid="addBtn"
+          data-testid="deleteAllTasksBtn"
           color="error"
           variant="contained"
           disabled={activeTaskId !== undefined}

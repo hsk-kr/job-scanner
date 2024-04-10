@@ -94,19 +94,29 @@ describe('TaskList', () => {
   });
 
   describe('Without the processing item', () => {
-    const handler = vi.fn();
+    const events = {
+      onDelete: vi.fn(),
+      onDownload: vi.fn(),
+      onDuplicate: vi.fn(),
+      onEdit: vi.fn(),
+      onLog: vi.fn(),
+      onTask: vi.fn(),
+      onAdd: vi.fn(),
+      onDeleteAllTasks: vi.fn(),
+    };
 
     beforeEach(() => {
       render(
         <TaskList
           {...defaultTaskListProps}
-          onDelete={handler}
-          onDownload={handler}
-          onDuplicate={handler}
-          onEdit={handler}
-          onLog={handler}
-          onTask={handler}
-          onAdd={handler}
+          onDelete={events.onDelete}
+          onDownload={events.onDownload}
+          onDuplicate={events.onDuplicate}
+          onEdit={events.onEdit}
+          onLog={events.onLog}
+          onTask={events.onTask}
+          onAdd={events.onAdd}
+          onDeleteAllTasks={events.onDeleteAllTasks}
         />
       );
       vi.resetAllMocks();
@@ -118,7 +128,12 @@ describe('TaskList', () => {
 
     test('onAdd should be fired.', () => {
       screen.getByTestId('addBtn').click();
-      expect(handler).toHaveBeenCalledOnce();
+      expect(events.onAdd).toHaveBeenCalledOnce();
+    });
+
+    test('onDeleteAllTasks should be fired.', () => {
+      screen.getByTestId('deleteAllTasksBtn').click();
+      expect(events.onDeleteAllTasks).toHaveBeenCalledOnce();
     });
 
     test('should render task items with corresponding status text', () => {
@@ -147,7 +162,7 @@ describe('TaskList', () => {
         '[data-testid="editBtn"]'
       );
       editBtn?.click();
-      expect(handler).not.toHaveBeenCalledOnce();
+      expect(events.onEdit).not.toHaveBeenCalledOnce();
     });
 
     test('events that belong to the "ready" status should be not called.', () => {
@@ -157,13 +172,13 @@ describe('TaskList', () => {
         '[data-testid="logBtn"]'
       );
       logBtn?.click();
-      expect(handler).not.toHaveBeenCalledOnce();
+      expect(events.onLog).not.toHaveBeenCalledOnce();
 
       const downloadBtn = firstTask.querySelector<HTMLButtonElement>(
         '[data-testid="downloadBtn"]'
       );
       downloadBtn?.click();
-      expect(handler).not.toHaveBeenCalledOnce();
+      expect(events.onDownload).not.toHaveBeenCalledOnce();
     });
 
     test('events should be called with correspending id.', () => {
@@ -173,29 +188,29 @@ describe('TaskList', () => {
         '[data-testid="deleteBtn"]'
       );
       deleteBtn?.click();
-      expect(handler).toHaveBeenCalledTimes(1);
-      expect(handler.mock.calls[0][0]).toBe('a');
+      expect(events.onDelete).toHaveBeenCalledTimes(1);
+      expect(events.onDelete.mock.calls[0][0]).toBe('a');
 
       const taskBtn = firstTask.querySelector<HTMLButtonElement>(
         '[data-testid="taskBtn"]'
       );
       taskBtn?.click();
-      expect(handler).toHaveBeenCalledTimes(2);
-      expect(handler.mock.calls[1][0]).toBe('a');
+      expect(events.onTask).toHaveBeenCalledTimes(1);
+      expect(events.onTask.mock.calls[0][0]).toBe('a');
 
       const duplicateBtn = firstTask.querySelector<HTMLButtonElement>(
         '[data-testid="duplicateBtn"]'
       );
       duplicateBtn?.click();
-      expect(handler).toHaveBeenCalledTimes(3);
-      expect(handler.mock.calls[2][0]).toBe('a');
+      expect(events.onDuplicate).toHaveBeenCalledTimes(1);
+      expect(events.onDuplicate.mock.calls[0][0]).toBe('a');
 
       const editBtn = firstTask.querySelector<HTMLButtonElement>(
         '[data-testid="editBtn"]'
       );
       editBtn?.click();
-      expect(handler).toHaveBeenCalledTimes(4);
-      expect(handler.mock.calls[3][0]).toBe('a');
+      expect(events.onEdit).toHaveBeenCalledTimes(1);
+      expect(events.onEdit.mock.calls[0][0]).toBe('a');
     });
   });
 });
