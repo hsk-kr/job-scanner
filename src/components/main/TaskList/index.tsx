@@ -15,6 +15,7 @@ import DuplicateIcon from '@mui/icons-material/ContentCopy';
 import { JobTask, JobTaskStatus } from '@/types/job';
 import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
+import Stack from '@mui/material/Stack';
 
 interface TaskProps {
   taskName: string;
@@ -40,6 +41,7 @@ export interface TaskListProps {
   onDuplicate?: (id: string) => void;
   onDownload?: (id: string, taskName: string) => void;
   onAdd?: VoidFunction;
+  onDeleteAllTasks?: VoidFunction;
 }
 
 export const Task = ({
@@ -202,6 +204,7 @@ const TaskList = ({
   onLog,
   onTask,
   onAdd,
+  onDeleteAllTasks,
 }: TaskListProps) => {
   const handleTask = (taskId: string) => () => {
     onTask?.(taskId);
@@ -237,7 +240,15 @@ const TaskList = ({
       }}
       data-testid="taskList"
     >
-      <Box textAlign="right" mb={1}>
+      <Stack direction="row" columnGap={1} justifyContent="flex-end" mb={1}>
+        <Button
+          data-testid="addBtn"
+          color="error"
+          variant="contained"
+          onClick={onDeleteAllTasks}
+        >
+          Delete All Tasks
+        </Button>
         <Button
           data-testid="addBtn"
           color="primary"
@@ -246,7 +257,7 @@ const TaskList = ({
         >
           Add Task
         </Button>
-      </Box>
+      </Stack>
       {tasks.map((task) => (
         <Task
           key={task.id}

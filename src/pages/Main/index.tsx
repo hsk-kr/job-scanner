@@ -7,7 +7,7 @@ import Divider from '@mui/material/Divider';
 import useJobTasks from '@/hooks/useJobTasks';
 import LogViewer from '@/components/main/LogViewer';
 import { ComponentProps, useState } from 'react';
-import { getTask } from '@/utils/storage';
+import { deleteAllTasks, getTask } from '@/utils/storage';
 import { saveJsonAsFile } from '@/utils/file';
 import RedirectDraftPage from '@/components/RedirectDraftPage';
 
@@ -103,13 +103,23 @@ const Main = () => {
     }
   };
 
-  const handleDelete = (taskId: string) => {
+  const handleTaskDelete = (taskId: string) => {
     if (
       window.confirm(
         "Do you really want to delete the task?\nOnce you delete the task, you can't restore it."
       )
     ) {
       deleteJobTask(taskId);
+    }
+  };
+
+  const handleAllTasksDelete = () => {
+    if (
+      window.confirm(
+        "Do you reallt want to delete ALL the tasks?\nOnce you delete all, you can't restore them."
+      )
+    ) {
+      deleteAllTasks();
     }
   };
 
@@ -142,7 +152,8 @@ const Main = () => {
       <TaskList
         onAdd={handleTaskAdd}
         onEdit={handleTaskEdit}
-        onDelete={handleDelete}
+        onDelete={handleTaskDelete}
+        onDeleteAllTasks={handleAllTasksDelete}
         onTask={handleTask}
         onLog={openLogViewer}
         onDuplicate={handleTaskDuplicate}

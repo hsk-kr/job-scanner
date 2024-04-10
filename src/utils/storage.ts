@@ -126,6 +126,18 @@ export const deleteTask = async (taskId: string) => {
   });
 };
 
+export const deleteAllTasks = async () => {
+  const versionData = await chrome.storage.local.get(STORAGE_VERSION);
+  const data = (versionData[STORAGE_VERSION] ?? {}) as StorageData;
+
+  await chrome.storage.local.set({
+    [STORAGE_VERSION]: {
+      ...data,
+      tasks: [],
+    },
+  });
+};
+
 export const startTask = async (taskId: string) => {
   const versionData = await chrome.storage.local.get(STORAGE_VERSION);
   const data = (versionData[STORAGE_VERSION] ?? {}) as StorageData;
