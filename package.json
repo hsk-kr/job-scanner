@@ -1,5 +1,5 @@
 {
-  "name": "linkedin-job-scanner",
+  "name": "job-scanner",
   "private": true,
   "version": "0.0.4",
   "scripts": {

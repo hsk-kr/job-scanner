@@ -1,4 +1,4 @@
-# LinkedIn Job Scanner
+# Job Scanner
 
 A chrome extension to find job posts by crawling that contain keywords you set up.
 

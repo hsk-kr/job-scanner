@@ -15,7 +15,7 @@ const MainHeader = ({ onGithubClick, onViewerClick }: MainHeaderProps) => {
     <AppBar position="static">
       <Toolbar>
         <Typography variant="h6" component="div" flexGrow={1}>
-          LinkedIn Job Scanner
+          Job Scanner
         </Typography>
         <IconButton data-testid="viewer" onClick={onViewerClick}>
           <PreviewIcon sx={{ color: 'white' }} />

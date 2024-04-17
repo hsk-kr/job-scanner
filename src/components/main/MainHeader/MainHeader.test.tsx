@@ -6,7 +6,7 @@ describe('MainHeader', () => {
   test('should be rendered.', () => {
     const { getByText } = render(<MainHeader />);
 
-    expect(getByText(/LinkedIn Job Scanner/)).toBeInTheDocument();
+    expect(getByText(/Job Scanner/)).toBeInTheDocument();
   });
 
   test('should fire github click event.', () => {
