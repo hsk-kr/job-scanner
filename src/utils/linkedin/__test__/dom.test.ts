@@ -72,13 +72,11 @@ describe('JobList Page', () => {
       const jobInfo = getJobInfo();
 
       expect(jobInfo).toEqual({
-        jobTitle: expect.stringMatching(/Frontend Developer \(f\/m\/d\)/),
+        jobTitle: expect.stringMatching(/Senior Software Engineer/),
         jobDescription: expect.stringMatching(
-          /We are a VC and corporate funded global technology company/
+          /Collaborate with cross-functional teams/
         ),
-        jobAdditionalInfo: expect.stringMatching(
-          /CrateDB · Berlin, Berlin, Germany \(Remote\)/
-        ),
+        jobAdditionalInfo: expect.stringMatching(/Opus Recruitment Solutions/),
         url: expect.stringMatching(/http/),
       });
     });
@@ -93,17 +91,17 @@ describe('JobList Page', () => {
   });
 
   describe('getSelectedJobIndex', () => {
-    test('should return 3.', () => {
+    test('should return 5.', () => {
       const selectedJobIndex = getSelectedJobIndex();
 
-      expect(selectedJobIndex).toBe(3);
+      expect(selectedJobIndex).toBe(5);
     });
   });
 
   describe('moveToNextJobList', () => {
     test('should click the next page button.', () => {
       const handleNextPageClick = vi.fn();
-      const button = document.querySelector('#ember1956 > button');
+      const button = document.querySelector('#ember199433 > button');
 
       button?.addEventListener('click', handleNextPageClick);
       moveToNextJobList();

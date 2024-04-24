@@ -2,11 +2,13 @@ import { JobInfo } from '@/types/job';
 
 export const getJobInfo = (): JobInfo => {
   const jobTitle = document.querySelector(
-    '.job-details-jobs-unified-top-card__job-title'
+    '.job-details-jobs-unified-top-card__job-title span'
   );
-  const jobDescription = document.querySelector('#job-details > span');
+  const jobDescription = document.querySelector(
+    '.jobs-description-content__text > div'
+  );
   const jobAdddtionalInfo = document.querySelector(
-    '.job-details-jobs-unified-top-card__primary-description'
+    '.job-details-jobs-unified-top-card__primary-description-container'
   );
 
   return {
