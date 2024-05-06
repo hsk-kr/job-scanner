@@ -72,11 +72,11 @@ describe('JobList Page', () => {
       const jobInfo = getJobInfo();
 
       expect(jobInfo).toEqual({
-        jobTitle: expect.stringMatching(/Senior Software Engineer/),
+        jobTitle: expect.stringMatching(/Javascript Developer/),
         jobDescription: expect.stringMatching(
-          /Collaborate with cross-functional teams/
+          /My client are an innovative and forward thinking tech company/
         ),
-        jobAdditionalInfo: expect.stringMatching(/Opus Recruitment Solutions/),
+        jobAdditionalInfo: expect.stringMatching(/Oakwell Hampton/),
         url: expect.stringMatching(/http/),
       });
     });
@@ -91,17 +91,21 @@ describe('JobList Page', () => {
   });
 
   describe('getSelectedJobIndex', () => {
-    test('should return 5.', () => {
+    test('should return 22.', () => {
       const selectedJobIndex = getSelectedJobIndex();
 
-      expect(selectedJobIndex).toBe(5);
+      expect(selectedJobIndex).toBe(22);
     });
   });
 
   describe('moveToNextJobList', () => {
     test('should click the next page button.', () => {
+      const linkButtons = document.querySelectorAll<HTMLButtonElement>(
+        '.jobs-search-pagination__indicator-button'
+      );
       const handleNextPageClick = vi.fn();
-      const button = document.querySelector('#ember199433 > button');
+      const button = linkButtons[2];
+      console.log('button', button, linkButtons);
 
       button?.addEventListener('click', handleNextPageClick);
       moveToNextJobList();

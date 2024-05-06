@@ -2,7 +2,7 @@ import { JobInfo } from '@/types/job';
 
 export const getJobInfo = (): JobInfo => {
   const jobTitle = document.querySelector(
-    '.job-details-jobs-unified-top-card__job-title span'
+    '.job-details-jobs-unified-top-card__job-title'
   );
   const jobDescription = document.querySelector(
     '.jobs-description-content__text > div'
@@ -104,16 +104,20 @@ export const scrollToTheBottom = (delay = 250) => {
 
 export const moveToNextJobList = () => {
   const pages = document.querySelectorAll<HTMLLIElement>(
-    'ul.artdeco-pagination__pages > li'
+    'ul.jobs-search-pagination__pages > li'
   );
 
   if (pages.length === 0) return false;
 
   for (let i = 0; i < pages.length; i++) {
-    if (pages[i].classList.contains('selected')) {
+    const button = pages[i].querySelector('button');
+    if (
+      button?.classList.contains(
+        'jobs-search-pagination__indicator-button--active'
+      )
+    ) {
       if (i === pages.length - 1) return false;
-      const button = pages[i + 1].querySelector<HTMLButtonElement>('button');
-      button?.click();
+      pages[i + 1]?.querySelector('button')?.click();
       break;
     }
   }
