@@ -219,7 +219,6 @@ const html = await page.content();
 if (updateOption) {
   const jobDescriptionWords = jobInfo.jobDescription.split(' ');
   let randomJobDescriptionPart;
-  console.log(jobDescriptionWords);
 
   do {
     randomJobDescriptionPart =

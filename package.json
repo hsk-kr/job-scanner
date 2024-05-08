@@ -4,11 +4,12 @@
   "version": "0.1.2",
   "scripts": {
     "dev": "vite",
-    "test": "vitest",
+    "test": "vitest run",
     "test:update": "node tools/test/linkedin-test-html-generator.mjs --update",
     "build": "tsc && vite build && vite build -c vite-script.config.ts && browserify ./dist/assets/content.js -o ./dist/assets/content.js",
     "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "prepare": "husky"
   },
   "dependencies": {
     "@emotion/react": "^11.11.1",
@@ -40,7 +41,9 @@
     "eslint": "^8.44.0",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.1",
+    "husky": "^9.0.11",
     "jsdom": "^22.1.0",
+    "lint-staged": "^15.2.2",
     "typescript": "^5.0.2",
     "vite": "^4.4.0",
     "vitest": "^0.34.5"
