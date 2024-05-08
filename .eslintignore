@@ -3,3 +3,4 @@ jest.config.*
 vite.config.*
 vite-script.config.*
 vitest.config.*
+tools/*

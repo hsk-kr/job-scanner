@@ -128,7 +128,8 @@ export const moveToNextJobList = () => {
 export const isLoading = () => {
   const loading =
     document.querySelector('#main *[class*=--loading]') ??
-    document.querySelector('.jobs-ghost-fadein-placeholder');
+    document.querySelector('.jobs-ghost-fadein-placeholder') ??
+    document.querySelector('*[class*=ghost-placeholder]');
 
   return loading !== null ? true : false;
 };

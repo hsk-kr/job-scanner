@@ -1,0 +1,6 @@
+{
+  "name": "tools",
+  "description": "utils to help the development and test.",
+  "type": "module",
+  "scripts": {}
+}

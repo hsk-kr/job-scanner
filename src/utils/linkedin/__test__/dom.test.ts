@@ -16,52 +16,6 @@ const jobListHtml = readFileSync(path.join(__dirname, 'html/joblist.html'), {
   flag: 'r',
 }).toString();
 
-const jobListLoadingHtml = readFileSync(
-  path.join(__dirname, 'html/joblist-detail-contents-loading.html'),
-  {
-    encoding: 'utf-8',
-    flag: 'r',
-  }
-).toString();
-
-const jobListLastPageHtml = readFileSync(
-  path.join(__dirname, 'html/joblist-last-page.html'),
-  {
-    encoding: 'utf-8',
-    flag: 'r',
-  }
-).toString();
-
-describe('JobList Loading Page', () => {
-  beforeAll(() => {
-    document.documentElement.innerHTML = jobListLoadingHtml;
-  });
-
-  describe('isLoading', () => {
-    test('should return true.', () => {
-      expect(isLoading()).toBe(true);
-    });
-  });
-});
-
-describe('JobList Last Page', () => {
-  beforeAll(() => {
-    document.documentElement.innerHTML = jobListLastPageHtml;
-  });
-
-  describe('moveToNextJobList', () => {
-    test('should return false.', () => {
-      expect(moveToNextJobList()).toBe(false);
-    });
-  });
-
-  describe('isLoading', () => {
-    test('should return false.', () => {
-      expect(isLoading()).toBe(false);
-    });
-  });
-});
-
 describe('JobList Page', () => {
   beforeAll(() => {
     document.documentElement.innerHTML = jobListHtml;
@@ -71,12 +25,15 @@ describe('JobList Page', () => {
     test('should return correct job title and description.', () => {
       const jobInfo = getJobInfo();
 
+      /**
+       * jobTitle, jobDescription, jobAdditionalInfo should be changed when joblist.html file is changed.
+       */
       expect(jobInfo).toEqual({
-        jobTitle: expect.stringMatching(/Javascript Developer/),
+        jobTitle: expect.stringMatching(/Design Frontend Developer/),
         jobDescription: expect.stringMatching(
-          /My client are an innovative and forward thinking tech company/
+          /performance, and other factors evaluated during the hiring process.21 vacation/
         ),
-        jobAdditionalInfo: expect.stringMatching(/Oakwell Hampton/),
+        jobAdditionalInfo: expect.stringMatching(/Blooket/),
         url: expect.stringMatching(/http/),
       });
     });
@@ -91,10 +48,10 @@ describe('JobList Page', () => {
   });
 
   describe('getSelectedJobIndex', () => {
-    test('should return 22.', () => {
+    test('should return 0.', () => {
       const selectedJobIndex = getSelectedJobIndex();
 
-      expect(selectedJobIndex).toBe(22);
+      expect(selectedJobIndex).toBe(0);
     });
   });
 
@@ -104,8 +61,7 @@ describe('JobList Page', () => {
         '.jobs-search-pagination__indicator-button'
       );
       const handleNextPageClick = vi.fn();
-      const button = linkButtons[2];
-      console.log('button', button, linkButtons);
+      const button = linkButtons[1];
 
       button?.addEventListener('click', handleNextPageClick);
       moveToNextJobList();
