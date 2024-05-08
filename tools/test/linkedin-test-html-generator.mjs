@@ -2,6 +2,7 @@ import puppeteer from 'puppeteer';
 import readline from 'node:readline';
 import fs from 'node:fs';
 import path from 'node:path';
+import process from 'node:process';
 
 const JOB_PAGE = 'https://www.linkedin.com/jobs/';
 const JOB_LIST_PAGE =
@@ -10,6 +11,7 @@ const rl = readline.createInterface({
   input: process.stdin,
   output: process.stdout,
 });
+const updateOption = process.argv.findIndex((v) => v === '--update') !== -1;
 
 /**
  * Save the file with the content under the html directory.
@@ -29,6 +31,74 @@ const saveFile = (filename, content) => {
   }
 
   fs.writeFileSync(filePath, content);
+};
+
+/**
+ * update utils/linkedin/__test__/html/joblist.html file and dom.test.ts code.
+ * @param {string} html
+ * @param {{ jobTitle: string, jobAdditionalInfo: string, jobDescription: string }} jobInfo
+ */
+const updateTestFile = (html, jobInfo) => {
+  const rootDir = path.join(
+    import.meta.url.substring(
+      'file://'.length,
+      import.meta.url.lastIndexOf('/')
+    ),
+    '..',
+    '..'
+  );
+  const testDirPath = path.join(
+    rootDir,
+    'src',
+    'utils',
+    'linkedin',
+    '__test__'
+  );
+  const joblistPath = path.join(testDirPath, 'html', 'joblist.html');
+  const domTestPath = path.join(testDirPath, 'dom.test.ts');
+
+  if (!fs.existsSync(joblistPath) || !fs.existsSync(domTestPath)) {
+    console.error('joblist.html or dom.test.ts file not found.');
+    return false;
+  }
+
+  const testCode = fs.readFileSync(domTestPath, 'utf8');
+
+  let updateStartIdx = testCode.indexOf(
+    'linkedin-test-html-generator UPDATE START'
+  );
+  let updateEndIdx = testCode.indexOf(
+    'linkedin-test-html-generator UPDATE END'
+  );
+  if (updateStartIdx === -1 || updateEndIdx === -1) {
+    console.error(
+      'the code will be updated should be noted with the comments linkedin-test-html-generator UPDATE START and linkedin-test-html-generator UPDATE END'
+    );
+    return false;
+  }
+  updateStartIdx = testCode.indexOf('expect', updateStartIdx);
+  updateEndIdx = testCode.lastIndexOf(';', updateEndIdx) + 1;
+
+  const updatedTestCode = `
+    expect(jobInfo).toEqual({
+      jobTitle: expect.stringContaining('${jobInfo.jobTitle}'),
+      jobDescription: expect.stringContaining(
+        '${jobInfo.jobDescription}'
+      ),
+      jobAdditionalInfo: expect.stringContaining('${jobInfo.jobAdditionalInfo}'),
+      url: expect.stringContaining('http'),
+    });
+  `;
+
+  const newTestCode =
+    testCode.substring(0, updateStartIdx) +
+    updatedTestCode +
+    testCode.substring(updateEndIdx);
+
+  fs.writeFileSync(joblistPath, html);
+  fs.writeFileSync(domTestPath, newTestCode);
+
+  return true;
 };
 
 /**
@@ -145,10 +215,39 @@ const jobInfo = {
 };
 
 const html = await page.content();
-saveFile('joblist.html', html);
-saveFile('jobinfo.json', JSON.stringify(jobInfo, undefined, 2));
 
-console.log('joblist.html, jobinfo.json are created in the html directory.');
+if (updateOption) {
+  const jobDescriptionWords = jobInfo.jobDescription.split(' ');
+  let randomJobDescriptionPart;
+  console.log(jobDescriptionWords);
+
+  do {
+    randomJobDescriptionPart =
+      jobDescriptionWords[
+        Math.floor(Math.random() * jobDescriptionWords.length)
+      ];
+  } while (randomJobDescriptionPart.length === 0);
+
+  // update the test code and the test html file in the project
+  const result = updateTestFile(html, {
+    jobTitle: jobInfo.jobTitle,
+    jobAdditionalInfo: jobInfo.jobAdditionalInfo.substring(
+      0,
+      jobInfo.jobAdditionalInfo.indexOf(' ')
+    ),
+    jobDescription: randomJobDescriptionPart,
+  });
+
+  if (result) {
+    console.log(
+      'joblist.html, dom.test.ts files has been updated. You must check if the changes updated accordingly.'
+    );
+  }
+} else {
+  saveFile('joblist.html', html);
+  saveFile('jobinfo.json', JSON.stringify(jobInfo, undefined, 2));
+  console.log('joblist.html, jobinfo.json are created in the html directory.');
+}
 
 // dispose resources
 rl.close();

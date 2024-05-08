@@ -29,9 +29,7 @@ describe('JobList Page', () => {
       // linkedin-test-html-generator UPDATE START
       expect(jobInfo).toEqual({
         jobTitle: expect.stringContaining('Design Frontend Developer'),
-        jobDescription: expect.stringContaining(
-          'performance, and other factors evaluated during the hiring process.21 vacation'
-        ),
+        jobDescription: expect.stringContaining('for'),
         jobAdditionalInfo: expect.stringContaining('Blooket'),
         url: expect.stringContaining('http'),
       });

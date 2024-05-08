@@ -33,3 +33,12 @@ Update the job title, description, addtional info in `dom.test.ts` file accordin
 ```
 pnpm run test
 ```
+
+### Reflect on the html and the test files
+
+```
+pnpm run test:update
+```
+
+A part of the test code in `dom.test.ts` will be updated.
+You should test and check it by yourselves and get rid of unncessary space.
