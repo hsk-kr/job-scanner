@@ -22,20 +22,20 @@ describe('JobList Page', () => {
   });
 
   describe('getJobInfo', () => {
-    test('should return correct job title and description.', () => {
+    test('should return correct job information.', () => {
       const jobInfo = getJobInfo();
 
-      /**
-       * jobTitle, jobDescription, jobAdditionalInfo should be changed when joblist.html file is changed.
-       */
+      // Below comments UPDATE START ~ UPDATE END is used to update the test code by linkedin-test-html-generator script
+      // linkedin-test-html-generator UPDATE START
       expect(jobInfo).toEqual({
-        jobTitle: expect.stringMatching(/Design Frontend Developer/),
-        jobDescription: expect.stringMatching(
-          /performance, and other factors evaluated during the hiring process.21 vacation/
+        jobTitle: expect.stringContaining('Design Frontend Developer'),
+        jobDescription: expect.stringContaining(
+          'performance, and other factors evaluated during the hiring process.21 vacation'
         ),
-        jobAdditionalInfo: expect.stringMatching(/Blooket/),
-        url: expect.stringMatching(/http/),
+        jobAdditionalInfo: expect.stringContaining('Blooket'),
+        url: expect.stringContaining('http'),
       });
+      // linkedin-test-html-generator UPDATE END
     });
   });
 
