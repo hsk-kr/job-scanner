@@ -1,7 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import TaskList from '@/components/main/TaskList';
-import Header from '@/components/main/MainHeader';
-import RandomTipBanner from '@/components/main/RandomTipBanner';
+import Header from '@/components/refactor/main/Header';
 import styled from '@emotion/styled';
 import Divider from '@mui/material/Divider';
 import useJobTasks from '@/hooks/useJobTasks';
@@ -16,21 +15,6 @@ const Container = styled.div`
   flex-direction: column;
   height: 100%;
 `;
-
-const tipBannerProps: ComponentProps<typeof RandomTipBanner> = {
-  delay: 5000,
-  tips: [
-    "You should stay on the job list page while it's in progress.",
-    'You can check if your conditions work correctly as you expect.',
-    "Once you stop a job task, you can't restart it.",
-    'If you have any suggestions, click the GitHub icon!',
-    'If you find any errors, let me know on the GitHub repo!',
-    'Use a JSON viewer in the top right corner to view a JSON file on the web.',
-    "Once you delete a job task, you can't restore it.",
-    'You can copy a task to create a new one.',
-    'You can include space characters in the text.',
-  ],
-};
 
 const Main = () => {
   const navigate = useNavigate();
@@ -62,27 +46,12 @@ const Main = () => {
     setLogViewer((prevLogViewer) => ({ ...prevLogViewer, visible: false }));
   };
 
-  const openGithub = () => {
-    window.open('https://github.com/hsk-kr/linkedin-job-scanner', '_blank');
-  };
-
-  const openViewer = () => {
-    window.open(
-      'https://hsk-kr.github.io/job-scanner-json-webviewer/',
-      '_blank'
-    );
-  };
-
   const handleTaskEdit = (taskId: string) => {
     navigate(`/task-form?isEdit=true&id=${taskId}`);
   };
 
   const handleTaskDuplicate = (taskId: string) => {
     navigate(`/task-form?isEdit=false&id=${taskId}`);
-  };
-
-  const handleTaskAdd = () => {
-    navigate('/task-form');
   };
 
   const handleTask = (taskId: string) => {
@@ -146,11 +115,9 @@ const Main = () => {
   return (
     <Container>
       <RedirectDraftPage />
-      <Header onGithubClick={openGithub} onViewerClick={openViewer} />
-      <RandomTipBanner {...tipBannerProps} />
+      <Header />
       <Divider />
       <TaskList
-        onAdd={handleTaskAdd}
         onEdit={handleTaskEdit}
         onDelete={handleTaskDelete}
         onDeleteAllTasks={handleAllTasksDelete}

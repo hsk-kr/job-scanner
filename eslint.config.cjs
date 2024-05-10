@@ -26,4 +26,12 @@ module.exports = {
     '@typescript-eslint/no-non-null-assertion': 'off',
     '@typescript-eslint/no-misused-promises': 'off',
   },
+  ignores: [
+    'jest.config.*',
+    '*.cjs',
+    'vite.config.*',
+    'vite-script.config.*',
+    'vitest.config.*',
+    'tools/*',
+  ],
 };

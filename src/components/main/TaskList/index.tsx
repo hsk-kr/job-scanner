@@ -250,14 +250,6 @@ const TaskList = ({
         >
           Delete All Tasks
         </Button>
-        <Button
-          data-testid="addBtn"
-          color="primary"
-          variant="contained"
-          onClick={onAdd}
-        >
-          Add Task
-        </Button>
       </Stack>
       {tasks.map((task) => (
         <Task

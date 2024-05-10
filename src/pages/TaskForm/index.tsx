@@ -1,6 +1,5 @@
-import TaskFormHeader from '@/components/task-form/TaskFormHeader';
-import styled from '@emotion/styled';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import TaskForm from '@/components/task-form/refactor/TaskForm';
 import TaskFormBody from '@/components/task-form/TaskFormBody';
 import useJobTasks from '@/hooks/useJobTasks';
 import { ComponentProps, useEffect, useState } from 'react';
@@ -10,14 +9,10 @@ import {
   getTask,
   loadDraftTaskFormData,
 } from '@/utils/storage';
+import { DndProvider } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
 
-const Container = styled.div`
-  display: flex;
-  flex-direction: column;
-  height: calc(100% - 64px);
-`;
-
-const TaskForm = () => {
+const TaskFormPage = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [initialValue, setInitialValue] =
@@ -90,17 +85,21 @@ const TaskForm = () => {
     loadTask();
   }, [taskId]);
 
-  return (
-    <Container>
-      <TaskFormHeader onBack={back} />
-      <TaskFormBody
+  {
+    /* <TaskFormBody
         isEdit={isEdit}
         initialValue={initialValue}
         onDataChange={saveDraftTaskFormData}
-        onSubmit={handleSubmit}
-      />
-    </Container>
+        onSubmit={handleSubmit} */
+  }
+  {
+    /* /> */
+  }
+  return (
+    <DndProvider backend={HTML5Backend}>
+      <TaskForm />
+    </DndProvider>
   );
 };
 
-export default TaskForm;
+export default TaskFormPage;
