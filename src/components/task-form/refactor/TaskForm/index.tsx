@@ -15,19 +15,45 @@ import { v4 as uuidv4 } from 'uuid';
 interface TaskFormContext {
   unusedSubConditions: JobCondition['subConditions'];
   conditions: JobCondition[];
-  moveCondition: (from: DragItem, to: DragItem) => void;
+  moveSubCondition: MoveCondition;
+  deleteSubCondition: DeleteSubCondition;
 }
 
-type ConditionBadgeProps = JobCondition['subConditions'][0] & DragItem;
+type ConditionBadgeProps = JobCondition['subConditions'][0] &
+  DragItem & { onDelete?: VoidFunction };
 
 interface ConditionContainerProps {
   status: DragItem['status'];
   conditionId?: string;
 }
 
-type DragItem =
-  | { status: 'unused'; subConditionId: string }
-  | { status: 'used'; conditionId: string; subConditionId: string };
+type DragItemUnusedCondition = { status: 'unused'; subConditionId: string };
+
+type DragItemUsedCondition = {
+  status: 'used';
+  conditionId: string;
+  subConditionId: string;
+};
+
+type DragItem = DragItemUnusedCondition | DragItemUsedCondition;
+
+/**
+ * If conditionId does not exist in `from`, it means the data came from unusedConditions.
+ * If conditionId does not exist in `to`, it means the data gets into the unusedConditions.
+ */
+type MoveCondition = (
+  from: { conditionId?: string; subConditionId: string },
+  to: { conditionId?: string }
+) => void;
+
+/**
+ * If conditionId exists, it means subCondition is in one of the usedConditions
+ * Otherwise, it places in the unusedSubConditions;
+ */
+type DeleteSubCondition = (params: {
+  conditionId?: string;
+  subConditionId: string;
+}) => void;
 
 const TaskFormContext = createContext<TaskFormContext>(null!);
 
@@ -53,7 +79,7 @@ const TaskFormHeader = () => {
 };
 
 const TaskFormBody = () => {
-  const { unusedSubConditions, conditions } = useTaskFormContext();
+  const { conditions } = useTaskFormContext();
 
   return (
     <form className="p-4">
@@ -75,17 +101,20 @@ const TaskFormBody = () => {
       <div className="divider"></div>
       {/* Create Condition */}
       <div className="flex gap-2 items-center">
-        <select className="select select-bordered max-w-xs">
-          <option selected>Job Title</option>
-          <option>Job Description</option>
+        <select
+          className="select select-bordered max-w-xs"
+          defaultValue="title"
+        >
+          <option value="title">Job Title</option>
+          <option value="description">Job Description</option>
         </select>
-        <select className="select select-bordered max-w-xs">
-          <option selected>=</option>
-          <option>!=</option>
-          <option>{'<'}</option>
-          <option>{'<='}</option>
-          <option>{'>'}</option>
-          <option>{'>='}</option>
+        <select className="select select-bordered max-w-xs" defaultValue="=">
+          <option value="=">=</option>
+          <option value="!=">!=</option>
+          <option value="<">{'<'}</option>
+          <option value="<=">{'<='}</option>
+          <option value=">">{'>'}</option>
+          <option value=">=">{'>='}</option>
         </select>
         <input
           type="text"
@@ -103,12 +132,18 @@ const TaskFormBody = () => {
       <div className="divider"></div>
       {/* Conditions */}
       {conditions.map((condition) => (
-        <ConditionContainer
-          key={condition.id}
-          status="used"
-          conditionId={'test'}
-        />
+        <>
+          <ConditionContainer
+            key={condition.id}
+            status="used"
+            conditionId={condition.id}
+          />
+          <div className="divider">AND</div>
+        </>
       ))}
+      <div className="flex justify-center">
+        <button className="btn btn-outline">Add Condition Box</button>
+      </div>
     </form>
   );
 };
@@ -117,39 +152,60 @@ const ConditionContainer = ({
   status,
   conditionId,
 }: ConditionContainerProps) => {
-  const { unusedSubConditions, conditions, moveCondition } =
-    useTaskFormContext();
-  const [, drop] = useDrop<DragItem>(() => ({
-    accept: 'condition',
-    drop: (item) => {
-      if (item.status === 'unused') {
-        moveCondition(item, {
-          status,
-          conditionId: conditionId || '',
-          subConditionId: '',
-        });
-      }
-      return [];
-    },
-  }));
+  const {
+    unusedSubConditions,
+    conditions,
+    moveSubCondition,
+    deleteSubCondition,
+  } = useTaskFormContext();
+  const [, drop] = useDrop<DragItem>(
+    () => ({
+      accept: 'condition',
+      drop: (item) => {
+        const from =
+          item.status === 'unused'
+            ? { subConditionId: item.subConditionId }
+            : {
+                conditionId: conditionId || '',
+                subConditionId: item.subConditionId,
+              };
+        const to = { conditionId };
+        moveSubCondition(from, to);
+      },
+    }),
+    [moveSubCondition]
+  );
   const subConditions = useMemo(() => {
     if (status === 'unused') return unusedSubConditions;
-    return conditions[0].subConditions;
-  }, [status, conditions, unusedSubConditions]);
+    return conditions.find((c) => c.id === conditionId)?.subConditions;
+  }, [status, conditions, unusedSubConditions, conditionId]);
+
+  const handleSubConditionDelete = (subConditionId: string) => () => {
+    deleteSubCondition({
+      conditionId,
+      subConditionId,
+    });
+  };
 
   return (
     <div
-      className="p-4 h-28 card bg-base-300 rounded-box mt-4 flex gap-2 overflow-y-auto flex-row flex-wrap"
+      className="p-4 h-28 card bg-base-300 rounded-box mt-4 flex gap-2 overflow-y-auto flex-row flex-wrap content-start"
       ref={drop}
     >
-      {subConditions.map((subCondition) => (
-        <ConditionBadge
-          key={subCondition.id}
-          status={status}
-          conditionId={conditionId || ''}
-          subConditionId={subCondition.id}
-          {...subCondition}
-        />
+      {subConditions?.map((subCondition, subConditionIdx) => (
+        <>
+          <ConditionBadge
+            key={subCondition.id}
+            status={status}
+            conditionId={conditionId || ''}
+            subConditionId={subCondition.id}
+            onDelete={handleSubConditionDelete(subCondition.id)}
+            {...subCondition}
+          />
+          {subConditionIdx < subConditions.length - 1 && (
+            <div className="text-white text-sm">OR</div>
+          )}
+        </>
       ))}
     </div>
   );
@@ -163,16 +219,9 @@ const ConditionBadge = ({
   operator,
   target,
   text,
+  onDelete,
   ...dragItem
 }: ConditionBadgeProps) => {
-  let conditionText = '';
-  conditionText += not ? 'not, ' : '';
-  conditionText += caseInsensitive ? 'ci, ' : '';
-  conditionText += target === 'title' ? 'Job Title, ' : 'Job Description, ';
-  conditionText += `${operator}, `;
-  conditionText += `${frequency}, `;
-  conditionText += `"${text}"`;
-
   const [collected, drag] = useDrag<
     DragItem,
     DragItem,
@@ -182,8 +231,17 @@ const ConditionBadge = ({
     item: dragItem,
   }));
 
+  let conditionText = '';
+  conditionText += not ? 'not, ' : '';
+  conditionText += caseInsensitive ? 'ci, ' : '';
+  conditionText += target === 'title' ? 'Job Title, ' : 'Job Description, ';
+  conditionText += `${operator}, `;
+  conditionText += `${frequency}, `;
+  conditionText += `"${text}"`;
+
   return (
     <div
+      data-id={id}
       className="badge badge-warning gap-2 text-nowrap"
       ref={drag}
       {...collected}
@@ -194,6 +252,7 @@ const ConditionBadge = ({
         fill="none"
         viewBox="0 0 24 24"
         className="inline-block w-4 h-4 stroke-current cursor-pointer hover:scale-125 transition-all"
+        onClick={onDelete}
       >
         <path
           strokeLinecap="round"
@@ -206,53 +265,115 @@ const ConditionBadge = ({
   );
 };
 
+const dummy: JobCondition['subConditions'] = Array(5)
+  .fill(0)
+  .map(() => ({
+    id: uuidv4(),
+    not: false,
+    caseInsensitive: true,
+    target: 'title',
+    operator: '=',
+    frequency: 1,
+    text: 'jobtitle',
+  }));
+
 const TaskForm = () => {
-  const [unusedSubConditions, setUnusedSubConditions] = useState<
-    JobCondition['subConditions']
-  >(
-    Array(30)
-      .fill(0)
-      .map(() => ({
-        id: uuidv4(),
-        not: false,
-        caseInsensitive: true,
-        target: 'title',
-        operator: '=',
-        frequency: 1,
-        text: 'jobtitle',
-      }))
-  );
+  const [unusedSubConditions, setUnusedSubConditions] =
+    useState<JobCondition['subConditions']>(dummy);
   const [conditions, setConditions] = useState<JobCondition[]>([
     { id: 'test', subConditions: [] },
   ]);
 
-  const moveCondition = useCallback((from: DragItem, to: DragItem) => {
-    try {
-      if (from.status === 'unused') {
-        const subCondition = unusedSubConditions.find(
-          (e) => e.id === from.subConditionId
+  const deleteSubCondition: DeleteSubCondition = useCallback(
+    ({ conditionId, subConditionId }) => {
+      if (!conditionId) {
+        setUnusedSubConditions((prevUnusedSubConditions) =>
+          prevUnusedSubConditions.filter((sc) => sc.id !== subConditionId)
         );
-        if (!subCondition) throw new Error('subCondition');
-
-        if (to.status === 'used') {
-          setConditions((prevConditions) => {
-            return prevConditions.map((condition) => {
-              if (condition.id === to.conditionId) {
-                condition.subConditions =
-                  condition.subConditions.concat(subCondition);
-              }
-
-              return condition;
-            });
-          });
-        }
+        return;
       }
-    } catch (e) {
-      console.error(e);
-    }
-  }, []);
 
-  const value = { unusedSubConditions, conditions, moveCondition };
+      setConditions((c) =>
+        c.map((c) => {
+          if (c.id === conditionId) {
+            c.subConditions = c.subConditions.filter(
+              (sc) => sc.id !== subConditionId
+            );
+          }
+          return c;
+        })
+      );
+    },
+    []
+  );
+
+  const moveSubCondition = useCallback<MoveCondition>(
+    (from, to) => {
+      try {
+        let newUnusedSubConditions = [...unusedSubConditions];
+        const newConditions = [...conditions];
+        let hasUnusedSubConditionsUpdated = false;
+        let hasConditionsUpdated = false;
+
+        // Find condition will move and remove it
+        let fromCondition;
+        if (!from.conditionId) {
+          newUnusedSubConditions = newUnusedSubConditions.filter((c) => {
+            if (c.id === from.subConditionId) fromCondition = c;
+            return c.id !== from.subConditionId;
+          });
+          if (!fromCondition)
+            throw new Error(
+              `cannot find subCondition in unusedSubConditions - ${from.subConditionId}`
+            );
+          hasUnusedSubConditionsUpdated = true;
+        } else {
+          const condition = newConditions.find(
+            (c) => c.id === from.conditionId
+          );
+          if (!condition)
+            throw new Error(
+              `cannot find condition in conditions - ${from.conditionId}`
+            );
+
+          condition.subConditions = condition.subConditions.filter((sc) => {
+            if (sc.id === from.subConditionId) fromCondition = sc;
+            return sc.id !== from.subConditionId;
+          });
+          if (!fromCondition)
+            throw new Error(
+              `cannot find subCondition in conditions - ${from.conditionId}/${from.subConditionId}`
+            );
+          hasConditionsUpdated = true;
+        }
+
+        // Move the condition finded in the previous step to the target list
+        if (to.conditionId) {
+          const condition = newConditions.find((c) => c.id === to.conditionId);
+          condition?.subConditions.push(fromCondition);
+          hasConditionsUpdated = true;
+        } else {
+          newUnusedSubConditions.push(fromCondition);
+          hasUnusedSubConditionsUpdated = true;
+        }
+
+        // Update states
+        if (hasConditionsUpdated) setConditions(newConditions);
+        if (hasUnusedSubConditionsUpdated)
+          setUnusedSubConditions(newUnusedSubConditions);
+      } catch (e) {
+        console.error(e);
+      }
+    },
+    [conditions, unusedSubConditions]
+  );
+
+  const value = {
+    unusedSubConditions,
+    conditions,
+    moveSubCondition,
+    deleteSubCondition,
+  };
 
   return (
     <TaskFormContext.Provider value={value}>
