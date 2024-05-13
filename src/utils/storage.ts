@@ -211,17 +211,34 @@ export const clearDraftTaskFormData = async () => {
   });
 };
 
-export const draftTaskFormData = async (draftData: TaskFormDraft) => {
-  if (!window.chrome?.storage?.local) return;
-  const versionData = await chrome.storage.local.get(STORAGE_VERSION);
-  const data = (versionData[STORAGE_VERSION] ?? {}) as StorageData;
+let tmDraftTaskFormData: NodeJS.Timeout;
+export const draftTaskFormData = (
+  draftData: TaskFormDraft,
+  interval = 1000
+) => {
+  if (!window.chrome?.storage?.local) return () => {};
 
-  await chrome.storage.local.set({
-    [STORAGE_VERSION]: {
-      ...data,
-      draft: draftData,
-    },
+  let data: StorageData;
+  chrome.storage.local.get(STORAGE_VERSION).then((versionData) => {
+    data = (versionData[STORAGE_VERSION] ?? {}) as StorageData;
   });
+
+  clearInterval(tmDraftTaskFormData); // debounce
+  // using interval, make it able to stop while loading
+  tmDraftTaskFormData = setInterval(() => {
+    if (!data) return;
+
+    chrome.storage.local.set({
+      [STORAGE_VERSION]: {
+        ...data,
+        draft: draftData,
+      },
+    });
+    clearInterval(tmDraftTaskFormData); // stop logic the save logic must be executed once
+  }, interval);
+  return () => {
+    clearInterval(tmDraftTaskFormData);
+  };
 };
 
 export const loadDraftTaskFormData =

@@ -9,6 +9,7 @@ import SubConditionCreateForm from '../SubConditionCreateForm';
 import ConditionCheckModal from '../ConditionCheckModal';
 import { clearDraftTaskFormData } from '@/utils/storage';
 import { useJobTasks } from '@/stores/job-task';
+import Loading from '@/components/Loading';
 
 const TaskForm = () => {
   const { form, isEdit, taskId, conditions, appendCondition } = useTaskForm();
@@ -19,13 +20,13 @@ const TaskForm = () => {
   } = form;
   const { createJobTask, updateJobTask } = useJobTasks();
   const [modalOpen, setModalOpen] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const toggleModalOpen = () => {
     setModalOpen((prevModalOpen) => !prevModalOpen);
   };
   const submit: SubmitHandler<ITaskForm> = async (data) => {
-    setSubmitting(true);
+    setLoading(true);
 
     await clearDraftTaskFormData();
 
@@ -48,12 +49,14 @@ const TaskForm = () => {
   };
 
   const back = async () => {
+    setLoading(true);
     await clearDraftTaskFormData();
     navigate('/');
   };
 
   return (
     <>
+      {loading && <Loading />}
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -74,7 +77,7 @@ const TaskForm = () => {
           <div className="navbar-end">
             <button
               className={`btn btn-sm ${isEdit ? 'btn-warning' : ''}`}
-              disabled={submitting}
+              disabled={loading}
             >
               {isEdit ? 'Update' : 'Create'}
             </button>

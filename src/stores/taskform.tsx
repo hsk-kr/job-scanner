@@ -239,7 +239,7 @@ const TaskFormContextProvider = ({ children }: { children?: ReactNode }) => {
   }, [initialValue]);
 
   useEffect(() => {
-    draftTaskFormData({
+    const release = draftTaskFormData({
       taskId,
       isEdit,
       value: {
@@ -249,6 +249,10 @@ const TaskFormContextProvider = ({ children }: { children?: ReactNode }) => {
         jobConditions: conditions,
       },
     });
+
+    return () => {
+      release();
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [unusedSubConditions, conditions, taskName, delay]);
 
