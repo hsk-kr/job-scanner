@@ -23,6 +23,8 @@ export const createTask = async (
         delay: jobTask.delay,
         updatedAt: new Date().toLocaleString(),
         jobConditions,
+        foundJobs: [],
+        numOfTotalJobs: 0,
       }),
     },
   });
@@ -73,10 +75,7 @@ export const updateActiveTask = async (
   });
 };
 
-export const addUpActiveTask = async (
-  numOfJobPostsHaveSeen: number,
-  jobsHaveFound: JobInfo[]
-) => {
+export const addUpActiveTask = async (jobHaveFound: JobInfo | null) => {
   const versionData = await chrome.storage.local.get(STORAGE_VERSION);
   const data = (versionData[STORAGE_VERSION] ?? {}) as StorageData;
 
@@ -84,9 +83,10 @@ export const addUpActiveTask = async (
     [STORAGE_VERSION]: {
       ...data,
       activeTask: {
-        numOfTotalJobs:
-          (data.activeTask?.numOfTotalJobs ?? 0) + numOfJobPostsHaveSeen,
-        foundJobs: (data.activeTask?.foundJobs ?? []).concat(jobsHaveFound),
+        numOfTotalJobs: (data.activeTask?.numOfTotalJobs ?? 0) + 1,
+        foundJobs: jobHaveFound
+          ? (data.activeTask?.foundJobs ?? []).concat(jobHaveFound)
+          : data.activeTask?.foundJobs,
       },
     },
   });
@@ -153,10 +153,6 @@ export const startTask = async (taskId: string) => {
             }
           : task
       ),
-      activeTask: {
-        numOfTotalJobs: 0,
-        foubndJobs: [],
-      },
     },
   });
 };

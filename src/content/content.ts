@@ -1,4 +1,3 @@
-import { JobInfo } from '@/types/job';
 import { checkJobConditions } from '@/utils/condition';
 import {
   getJobInfo,
@@ -138,45 +137,35 @@ const genearatorJobPosts = async function* () {
 
 const CARWL_INTERVAL = 1000;
 const crawlJobPosts = async () => {
-  let numOfJobPostsHaveSeen = 0;
-  let jobsHaveFound: JobInfo[] = [];
   let taskId = '';
 
   try {
     for await (const jobPost of genearatorJobPosts()) {
       taskId = jobPost.processingTask.id;
-      numOfJobPostsHaveSeen++;
-
-      if (jobPost.value === null) {
-        break;
-      }
 
       // add a job into the storage
       if (
+        jobPost.value &&
         checkJobConditions(
           jobPost.value.jobTitle,
           removeHTMLTags(jobPost.value.jobDescription),
           jobPost.processingTask.jobConditions
         )
       ) {
-        // Remove jobDecsription, the text is too long.
-        jobsHaveFound.push({ ...jobPost.value, jobDescription: '' });
-
-        await addUpActiveTask(numOfJobPostsHaveSeen, jobsHaveFound);
-        numOfJobPostsHaveSeen = 0;
-        jobsHaveFound = [];
+        // Remove jobDecsription as it takes too much space
+        await addUpActiveTask({ ...jobPost.value, jobDescription: '' });
+      } else {
+        await addUpActiveTask(null);
       }
     }
 
     if (taskId) {
-      await addUpActiveTask(numOfJobPostsHaveSeen, jobsHaveFound);
       await finishTask(taskId, {
         status: 'done',
         message: 'Done job searching.',
       });
     }
   } catch (e) {
-    await addUpActiveTask(numOfJobPostsHaveSeen, jobsHaveFound);
     console.error(e);
   }
 

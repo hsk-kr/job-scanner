@@ -13,7 +13,8 @@ export interface JobTask {
   delay: number;
   jobConditions: JobCondition[];
   logMessage?: string;
-  foundJobs?: JobInfo[];
+  foundJobs?: JobInfo[]; // Set optional to integrate to the old version
+  numOfTotalJobs?: number; // Set optional to integrate to the old version
 }
 
 export interface ActiveJobTask {

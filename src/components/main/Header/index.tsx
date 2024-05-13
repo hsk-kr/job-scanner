@@ -1,6 +1,10 @@
+import useJobTasks from '@/hooks/useJobTasks';
 import { Link } from 'react-router-dom';
 
 const Header = () => {
+  const { activeTask } = useJobTasks();
+  const canCreateTask = activeTask === undefined;
+
   return (
     <div className="navbar bg-neutral">
       <div className="flex-1">
@@ -8,9 +12,11 @@ const Header = () => {
       </div>
       <div className="flex-none">
         <ul className="menu menu-horizontal px-1">
-          <li>
-            <Link to="/task-form">Create Task</Link>
-          </li>
+          {canCreateTask && (
+            <li>
+              <Link to="/task-form">Create Task</Link>
+            </li>
+          )}
           <li>
             <details className="z-50">
               <summary>Links</summary>

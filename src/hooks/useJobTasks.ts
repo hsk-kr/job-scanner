@@ -1,4 +1,5 @@
 import { JobTask } from '@/types/job';
+import { saveJsonAsFile } from '@/utils/file';
 import {
   getTasks,
   createTask,
@@ -7,6 +8,7 @@ import {
   finishTask,
   startTask,
   STORAGE_VERSION,
+  getTask,
 } from '@/utils/storage';
 import { useEffect, useMemo, useState } from 'react';
 
@@ -48,6 +50,20 @@ const useJobTasks = () => {
     _setJobTasks(await getTasks());
   };
 
+  const downloadJobTask = async (taskId: string, taskName: string) => {
+    const task = await getTask(taskId);
+    if (!task) {
+      alert(`Cannot find the task.`);
+      return;
+    }
+
+    const currentDate = new Date();
+    const dateStr = `${currentDate.getFullYear()}${(currentDate.getMonth() + 1)
+      .toString()
+      .padStart(2, '0')}${currentDate.getDate().toString().padStart(2, '0')}`;
+    saveJsonAsFile(`${taskName}-${dateStr}`, task.foundJobs);
+  };
+
   useEffect(() => {
     if (!chrome.storage) return;
 
@@ -72,6 +88,7 @@ const useJobTasks = () => {
     deleteJobTask,
     startJobTask,
     finishJobTask,
+    downloadJobTask,
   };
 };
 
