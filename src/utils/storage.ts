@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { JobCondition, JobInfo, JobTask, JobTaskStatus } from '@/types/job';
+import { JobInfo, JobTask, JobTaskStatus } from '@/types/job';
 import { StorageData, TaskFormDraft } from '@/types/storage';
 
 // When the structure of data is changed, upgrade the version.
@@ -8,8 +8,10 @@ export const STORAGE_VERSION = 'v1';
 
 // dependencies: [getTasks]
 export const createTask = async (
-  jobTask: Omit<JobTask, 'id' | 'status' | 'updatedAt'>,
-  jobConditions: JobCondition[]
+  jobTask: Omit<
+    JobTask,
+    'id' | 'status' | 'updatedAt' | 'foundJobs' | 'numOfTotalJobs'
+  >
 ) => {
   const tasks = await getTasks();
 
@@ -22,7 +24,7 @@ export const createTask = async (
         taskName: jobTask.taskName,
         delay: jobTask.delay,
         updatedAt: new Date().toLocaleString(),
-        jobConditions,
+        jobConditions: jobTask.jobConditions,
         foundJobs: [],
         numOfTotalJobs: 0,
       }),

@@ -3,10 +3,20 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useState,
 } from 'react';
 import { JobCondition } from '@/types/job';
 import { v4 as uuidv4 } from 'uuid';
+import { useSearchParams } from 'react-router-dom';
+import { ITaskForm } from '@/types/taskform';
+import {
+  draftTaskFormData,
+  getTask,
+  loadDraftTaskFormData,
+} from '@/utils/storage';
+import Loading from '@/components/Loading';
+import { UseFormReturn, useForm } from 'react-hook-form';
 
 /**
  * If conditionId does not exist in `from`, it means the data came from unusedConditions.
@@ -30,6 +40,13 @@ type AppendSubCondition = (
   props: Omit<JobCondition['subConditions'][0], 'id'>
 ) => void;
 
+type InitialValue = {
+  taskName: string;
+  delay: string;
+  jobConditions: JobCondition[];
+  unusedSubConditions: JobCondition['subConditions'];
+};
+
 interface TaskFormContext {
   unusedSubConditions: JobCondition['subConditions'];
   conditions: JobCondition[];
@@ -38,18 +55,29 @@ interface TaskFormContext {
   deleteCondition: (conditionId: string) => void;
   appendCondition: VoidFunction;
   appendSubCondition: AppendSubCondition;
+  isEdit: boolean;
+  taskId: string;
+  form: UseFormReturn<ITaskForm>;
 }
 
 const TaskFormContext = createContext<TaskFormContext>(null!);
 
 // eslint-disable-next-line react-refresh/only-export-components
-export const useTaskFormContext = () => useContext(TaskFormContext);
+export const useTaskForm = () => useContext(TaskFormContext);
 
 const TaskFormContextProvider = ({ children }: { children?: ReactNode }) => {
   const [unusedSubConditions, setUnusedSubConditions] = useState<
     JobCondition['subConditions']
   >([]);
   const [conditions, setConditions] = useState<JobCondition[]>([]);
+  const [initialValue, setInitialValue] = useState<InitialValue>();
+  const form = useForm<ITaskForm>({});
+  const [searchParams] = useSearchParams();
+  const taskId = searchParams.get('id') ?? '';
+  const isEdit =
+    searchParams.get('id') !== null && searchParams.get('isEdit') === 'true';
+  const [loading, setLoading] = useState(true);
+  const { taskName, delay } = form.watch();
 
   const appendCondition = useCallback(() => {
     setConditions((prevConditions) =>
@@ -159,9 +187,77 @@ const TaskFormContextProvider = ({ children }: { children?: ReactNode }) => {
     [conditions, unusedSubConditions]
   );
 
+  useEffect(() => {
+    setLoading(true);
+    const loadTask = async () => {
+      const draftData = await loadDraftTaskFormData();
+      if (draftData) {
+        setInitialValue({
+          taskName: draftData.value.taskName ?? '',
+          delay: draftData.value.delay ?? '',
+          jobConditions: draftData.value.jobConditions ?? [],
+          unusedSubConditions: draftData.value.unusedSubConditions ?? [],
+        });
+      } else if (taskId) {
+        const task = await getTask(taskId);
+        if (!task) return;
+
+        setInitialValue({
+          taskName: task.taskName,
+          delay: task.delay.toString(),
+          jobConditions: task.jobConditions,
+          unusedSubConditions: [],
+        });
+      } else {
+        setInitialValue({
+          taskName: '',
+          delay: '',
+          jobConditions: [
+            {
+              id: uuidv4(),
+              subConditions: [],
+            },
+          ],
+          unusedSubConditions: [],
+        });
+      }
+    };
+
+    loadTask().finally(() => setLoading(false));
+  }, [taskId]);
+
+  useEffect(() => {
+    if (!initialValue) return;
+    const delay = Number(initialValue.delay);
+    form.setValue('taskName', initialValue.taskName);
+    if (!Number.isNaN(delay)) {
+      form.setValue('delay', delay);
+    }
+    setConditions(initialValue.jobConditions);
+    setUnusedSubConditions(initialValue.unusedSubConditions);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialValue]);
+
+  useEffect(() => {
+    draftTaskFormData({
+      taskId,
+      isEdit,
+      value: {
+        taskName,
+        delay: delay?.toString() ?? '',
+        unusedSubConditions,
+        jobConditions: conditions,
+      },
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [unusedSubConditions, conditions, taskName, delay]);
+
   const value = {
     unusedSubConditions,
     conditions,
+    isEdit,
+    taskId,
+    form,
     moveSubCondition,
     deleteCondition,
     deleteSubCondition,
@@ -171,6 +267,7 @@ const TaskFormContextProvider = ({ children }: { children?: ReactNode }) => {
 
   return (
     <TaskFormContext.Provider value={value}>
+      {loading && <Loading />}
       {children}
     </TaskFormContext.Provider>
   );

@@ -1,5 +1,5 @@
 import { JobTask } from '@/types/job';
-import useJobTasks from '@/hooks/useJobTasks';
+import { useJobTasks } from '@/stores/job-task';
 import {
   FaPlayCircle,
   FaCopy,

@@ -1,9 +1,16 @@
-import useJobTasks from '@/hooks/useJobTasks';
+import { useJobTasks } from '@/stores/job-task';
 import TaskListItem from '../TaskListItem';
 import { deleteAllTasks } from '@/utils/storage';
+import { useEffect, useState } from 'react';
+import TaskListSkeleton from '../TaskListSkeleton';
 
 const TaskList = () => {
+  const [loading, setLoading] = useState(true);
   const { jobTasks } = useJobTasks();
+
+  useEffect(() => {
+    setLoading(false);
+  }, []);
 
   return (
     <div className="p-4">
@@ -23,11 +30,15 @@ const TaskList = () => {
           Delete All Tasks
         </button>
       </div>
-      <div className="flex flex-col gap-4">
-        {jobTasks.map((jobTask) => (
-          <TaskListItem key={jobTask.id} {...jobTask} />
-        ))}
-      </div>
+      {loading ? (
+        <TaskListSkeleton />
+      ) : (
+        <div className="flex flex-col gap-4">
+          {jobTasks.map((jobTask) => (
+            <TaskListItem key={jobTask.id} {...jobTask} />
+          ))}
+        </div>
+      )}
     </div>
   );
 };

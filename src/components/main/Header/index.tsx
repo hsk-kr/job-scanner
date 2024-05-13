@@ -1,4 +1,4 @@
-import useJobTasks from '@/hooks/useJobTasks';
+import { useJobTasks } from '@/stores/job-task';
 import { Link } from 'react-router-dom';
 
 const Header = () => {

@@ -10,37 +10,65 @@ import {
   STORAGE_VERSION,
   getTask,
 } from '@/utils/storage';
-import { useEffect, useMemo, useState } from 'react';
+import {
+  ReactNode,
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 
-const useJobTasks = () => {
+interface JobTaskContext {
+  jobTasks: JobTask[];
+  activeTask?: JobTask;
+  createJobTask: typeof createTask;
+  updateJobTask: typeof updateTask;
+  deleteJobTask: typeof deleteTask;
+  startJobTask: typeof startTask;
+  finishJobTask: typeof finishTask;
+  downloadJobTask: (taskId: string, taskName: string) => void;
+}
+const JobTaskContext = createContext<JobTaskContext>(null!);
+
+// eslint-disable-next-line react-refresh/only-export-components
+export const useJobTasks = () => useContext(JobTaskContext);
+
+const JobTaskContextProvider = ({ children }: { children?: ReactNode }) => {
   const [jobTasks, _setJobTasks] = useState<JobTask[]>([]);
   const activeTask = useMemo(
     () => jobTasks.find((t) => t.status === 'processing'),
     [jobTasks]
   );
 
-  const createJobTask: typeof createTask = async (jobTasks, jobConditions) => {
-    await createTask(jobTasks, jobConditions);
+  const createJobTask: JobTaskContext['createJobTask'] = async (jobTasks) => {
+    await createTask(jobTasks);
     refreshJobTasks();
   };
 
-  const updateJobTask: typeof updateTask = async (taskId, jobTask) => {
+  const updateJobTask: JobTaskContext['updateJobTask'] = async (
+    taskId,
+    jobTask
+  ) => {
     await updateTask(taskId, jobTask);
     refreshJobTasks();
   };
 
-  const deleteJobTask: typeof deleteTask = async (taskId) => {
+  const deleteJobTask: JobTaskContext['deleteJobTask'] = async (taskId) => {
     await deleteTask(taskId);
     refreshJobTasks();
   };
 
-  const finishJobTask: typeof finishTask = async (taskId, data) => {
+  const finishJobTask: JobTaskContext['finishJobTask'] = async (
+    taskId,
+    data
+  ) => {
     const result = await finishTask(taskId, data);
     refreshJobTasks();
     return result;
   };
 
-  const startJobTask: typeof startTask = async (taskId) => {
+  const startJobTask: JobTaskContext['startJobTask'] = async (taskId) => {
     const result = await startTask(taskId);
     refreshJobTasks();
     return result;
@@ -50,7 +78,10 @@ const useJobTasks = () => {
     _setJobTasks(await getTasks());
   };
 
-  const downloadJobTask = async (taskId: string, taskName: string) => {
+  const downloadJobTask: JobTaskContext['downloadJobTask'] = async (
+    taskId,
+    taskName
+  ) => {
     const task = await getTask(taskId);
     if (!task) {
       alert(`Cannot find the task.`);
@@ -80,7 +111,7 @@ const useJobTasks = () => {
     refreshJobTasks();
   }, []);
 
-  return {
+  const value = {
     jobTasks,
     activeTask,
     createJobTask,
@@ -90,6 +121,10 @@ const useJobTasks = () => {
     finishJobTask,
     downloadJobTask,
   };
+
+  return (
+    <JobTaskContext.Provider value={value}>{children}</JobTaskContext.Provider>
+  );
 };
 
-export default useJobTasks;
+export default JobTaskContextProvider;

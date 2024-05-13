@@ -1,6 +1,5 @@
-import TaskList from '@/components/refactor/main/TaskList';
-// import TaskList from '@/components/main/TaskList';
-import Header from '@/components/refactor/main/Header';
+import TaskList from '@/components/main/TaskList';
+import Header from '@/components/main/Header';
 import styled from '@emotion/styled';
 import Divider from '@mui/material/Divider';
 import RedirectDraftPage from '@/components/RedirectDraftPage';

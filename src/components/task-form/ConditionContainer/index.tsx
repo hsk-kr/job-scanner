@@ -1,17 +1,19 @@
 import { useDrop } from 'react-dnd';
 import { Fragment, useMemo } from 'react';
 import ConditionBadge from '../ConditionBadge';
-import { useTaskFormContext } from '@/stores/taskform';
+import { useTaskForm } from '@/stores/taskform';
 import { DragItem } from '@/types/taskform';
 
 interface ConditionContainerProps {
   status: DragItem['status'];
   conditionId?: string;
+  canDelete: boolean;
 }
 
 const ConditionContainer = ({
   status,
   conditionId,
+  canDelete,
 }: ConditionContainerProps) => {
   const {
     unusedSubConditions,
@@ -19,7 +21,7 @@ const ConditionContainer = ({
     moveSubCondition,
     deleteCondition,
     deleteSubCondition,
-  } = useTaskFormContext();
+  } = useTaskForm();
   const [, drop] = useDrop<DragItem>(
     () => ({
       accept: 'condition',
@@ -68,7 +70,7 @@ const ConditionContainer = ({
           )}
         </Fragment>
       ))}
-      {conditionId && (
+      {canDelete && conditionId && (
         <svg
           xmlns="http://www.w3.org/2000/svg"
           fill="none"

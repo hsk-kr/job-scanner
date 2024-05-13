@@ -5,8 +5,9 @@ export interface TaskFormDraft {
   isEdit: boolean;
   value: {
     taskName: string;
-    delay: number;
-    jobConditions: JobCondition[];
+    delay: string;
+    unusedSubConditions?: JobCondition['subConditions'];
+    jobConditions?: JobCondition[];
   };
 }
 

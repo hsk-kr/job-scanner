@@ -1,26 +1,55 @@
 import { IoIosArrowBack } from 'react-icons/io';
-import { Link } from 'react-router-dom';
-import TaskFormContextProvider, { useTaskFormContext } from '@/stores/taskform';
+import { useNavigate } from 'react-router-dom';
+import TaskFormContextProvider, { useTaskForm } from '@/stores/taskform';
 import ConditionContainer from '../ConditionContainer';
 import { Fragment, useState } from 'react';
 import { ITaskForm } from '@/types/taskform';
-import { SubmitHandler, useForm } from 'react-hook-form';
+import { SubmitHandler } from 'react-hook-form';
 import SubConditionCreateForm from '../SubConditionCreateForm';
-import ConditionCheckModal from '../../ConditionCheckModal';
+import ConditionCheckModal from '../ConditionCheckModal';
+import { clearDraftTaskFormData } from '@/utils/storage';
+import { useJobTasks } from '@/stores/job-task';
 
 const TaskForm = () => {
-  const { conditions, appendCondition } = useTaskFormContext();
+  const { form, isEdit, taskId, conditions, appendCondition } = useTaskForm();
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<ITaskForm>();
+  } = form;
+  const { createJobTask, updateJobTask } = useJobTasks();
   const [modalOpen, setModalOpen] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const navigate = useNavigate();
   const toggleModalOpen = () => {
     setModalOpen((prevModalOpen) => !prevModalOpen);
   };
-  const submit: SubmitHandler<ITaskForm> = (data) => {
-    console.log(data);
+  const submit: SubmitHandler<ITaskForm> = async (data) => {
+    setSubmitting(true);
+
+    await clearDraftTaskFormData();
+
+    if (isEdit && taskId) {
+      await updateJobTask(taskId, {
+        taskName: data.taskName,
+        delay: data.delay,
+        jobConditions: conditions,
+        status: 'ready',
+      });
+    } else {
+      await createJobTask({
+        taskName: data.taskName,
+        delay: data.delay,
+        jobConditions: conditions,
+      });
+    }
+
+    navigate('/');
+  };
+
+  const back = async () => {
+    await clearDraftTaskFormData();
+    navigate('/');
   };
 
   return (
@@ -33,16 +62,22 @@ const TaskForm = () => {
       >
         <div className="navbar bg-neutral">
           <div className="gap-2 navbar-start">
-            <Link
-              to="/"
-              className="btn-sm btn-ghost text-xl flex justify-center items-center"
+            <button
+              type="button"
+              className="btn-sm btn-ghost text-xl flex justify-center items-center rounded"
+              onClick={back}
             >
               <IoIosArrowBack />
-            </Link>
+            </button>
             <a className="btn btn-ghost text-lg">Task Form</a>
           </div>
           <div className="navbar-end">
-            <button className="btn btn-sm">Create</button>
+            <button
+              className={`btn btn-sm ${isEdit ? 'btn-warning' : ''}`}
+              disabled={submitting}
+            >
+              {isEdit ? 'Update' : 'Create'}
+            </button>
           </div>
         </div>
         <div className="p-4">
@@ -75,7 +110,7 @@ const TaskForm = () => {
                 min={1000}
                 max={5000}
                 className="range"
-                step="1000"
+                step={1000}
               />
               <div className="w-full flex justify-between text-xs px-2">
                 <span>1s</span>
@@ -91,7 +126,7 @@ const TaskForm = () => {
       <div className="p-4 pt-0">
         <div className="divider"></div> {/* Create Condition */}
         <SubConditionCreateForm />
-        <ConditionContainer status="unused" />
+        <ConditionContainer status="unused" canDelete={false} />
         <div className="chat chat-start mt-2">
           <div className="chat-bubble">
             Drag the conditions to the bottom section to apply
@@ -111,7 +146,11 @@ const TaskForm = () => {
         {/* Conditions */}
         {conditions.map((condition) => (
           <Fragment key={condition.id}>
-            <ConditionContainer status="used" conditionId={condition.id} />
+            <ConditionContainer
+              status="used"
+              conditionId={condition.id}
+              canDelete={conditions.length > 1}
+            />
             <div className="divider">AND</div>
           </Fragment>
         ))}

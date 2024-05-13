@@ -1,4 +1,4 @@
-import { useTaskFormContext } from '@/stores/taskform';
+import { useTaskForm } from '@/stores/taskform';
 import { ITaskSubConditionForm } from '@/types/taskform';
 import { SubmitHandler, useForm } from 'react-hook-form';
 
@@ -12,7 +12,7 @@ const SubConditionCreateForm = () => {
       caseInsensitive: true,
     },
   });
-  const { appendSubCondition } = useTaskFormContext();
+  const { appendSubCondition } = useTaskForm();
 
   const submit: SubmitHandler<ITaskSubConditionForm> = (data) => {
     appendSubCondition(data);

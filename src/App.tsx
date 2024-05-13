@@ -1,10 +1,11 @@
 import Main from './pages/Main';
 import TaskForm from './pages/TaskForm';
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import { RouterProvider, createBrowserRouter } from 'react-router-dom';
+import JobTaskContextProvider from './stores/job-task';
 
 const router = createBrowserRouter([
   {
-    path: '/task-form',
+    path: 'task-form',
     element: <TaskForm />,
   },
   {
@@ -14,7 +15,11 @@ const router = createBrowserRouter([
 ]);
 
 function App() {
-  return <RouterProvider router={router} />;
+  return (
+    <JobTaskContextProvider>
+      <RouterProvider router={router} />
+    </JobTaskContextProvider>
+  );
 }
 
 export default App;
