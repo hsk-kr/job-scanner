@@ -34,10 +34,12 @@ const ConditionBadge = ({
   conditionText += `${frequency}, `;
   conditionText += `"${text}"`;
 
+  const buttonColor =
+    dragItem.status === 'unused' ? 'badge-warning' : 'badge-success';
   return (
     <div
       data-id={id}
-      className="badge badge-warning gap-2 text-nowrap"
+      className={`badge ${buttonColor} gap-2 text-nowrap`}
       ref={drag}
       {...collected}
     >

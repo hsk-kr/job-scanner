@@ -1,5 +1,5 @@
 import { useDrop } from 'react-dnd';
-import { useMemo } from 'react';
+import { Fragment, useMemo } from 'react';
 import ConditionBadge from '../ConditionBadge';
 import { useTaskFormContext } from '@/stores/taskform';
 import { DragItem } from '@/types/taskform';
@@ -17,6 +17,7 @@ const ConditionContainer = ({
     unusedSubConditions,
     conditions,
     moveSubCondition,
+    deleteCondition,
     deleteSubCondition,
   } = useTaskFormContext();
   const [, drop] = useDrop<DragItem>(
@@ -27,7 +28,7 @@ const ConditionContainer = ({
           item.status === 'unused'
             ? { subConditionId: item.subConditionId }
             : {
-                conditionId: conditionId || '',
+                conditionId: item.conditionId || '',
                 subConditionId: item.subConditionId,
               };
         const to = { conditionId };
@@ -50,13 +51,12 @@ const ConditionContainer = ({
 
   return (
     <div
-      className="p-4 h-28 card bg-base-300 rounded-box mt-4 flex gap-2 overflow-y-auto flex-row flex-wrap content-start"
+      className="relative p-4 h-28 card bg-base-300 rounded-box mt-4 flex gap-2 overflow-y-auto flex-row flex-wrap content-start"
       ref={drop}
     >
       {subConditions?.map((subCondition, subConditionIdx) => (
-        <>
+        <Fragment key={subCondition.id}>
           <ConditionBadge
-            key={subCondition.id}
             status={status}
             conditionId={conditionId || ''}
             subConditionId={subCondition.id}
@@ -66,8 +66,24 @@ const ConditionContainer = ({
           {subConditionIdx < subConditions.length - 1 && (
             <div className="text-white text-sm">OR</div>
           )}
-        </>
+        </Fragment>
       ))}
+      {conditionId && (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          className="absolute top-1 right-1 inline-block w-4 h-4 stroke-current cursor-pointer hover:scale-125 transition-all"
+          onClick={() => deleteCondition(conditionId)}
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            d="M6 18L18 6M6 6l12 12"
+          ></path>
+        </svg>
+      )}
     </div>
   );
 };

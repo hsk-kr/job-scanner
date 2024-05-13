@@ -5,12 +5,40 @@ import {
   useContext,
   useState,
 } from 'react';
-import type {
-  DeleteSubCondition,
-  MoveCondition,
-  TaskFormContext,
-} from '@/types/taskform';
 import { JobCondition } from '@/types/job';
+import { v4 as uuidv4 } from 'uuid';
+
+/**
+ * If conditionId does not exist in `from`, it means the data came from unusedConditions.
+ * If conditionId does not exist in `to`, it means the data gets into the unusedConditions.
+ */
+type MoveCondition = (
+  from: { conditionId?: string; subConditionId: string },
+  to: { conditionId?: string }
+) => void;
+
+/**
+ * If conditionId exists, it means subCondition is in one of the usedConditions
+ * Otherwise, it places in the unusedSubConditions;
+ */
+type DeleteSubCondition = (params: {
+  conditionId?: string;
+  subConditionId: string;
+}) => void;
+
+type AppendSubCondition = (
+  props: Omit<JobCondition['subConditions'][0], 'id'>
+) => void;
+
+interface TaskFormContext {
+  unusedSubConditions: JobCondition['subConditions'];
+  conditions: JobCondition[];
+  moveSubCondition: MoveCondition;
+  deleteSubCondition: DeleteSubCondition;
+  deleteCondition: (conditionId: string) => void;
+  appendCondition: VoidFunction;
+  appendSubCondition: AppendSubCondition;
+}
 
 const TaskFormContext = createContext<TaskFormContext>(null!);
 
@@ -21,9 +49,31 @@ const TaskFormContextProvider = ({ children }: { children?: ReactNode }) => {
   const [unusedSubConditions, setUnusedSubConditions] = useState<
     JobCondition['subConditions']
   >([]);
-  const [conditions, setConditions] = useState<JobCondition[]>([
-    { id: 'test', subConditions: [] },
-  ]);
+  const [conditions, setConditions] = useState<JobCondition[]>([]);
+
+  const appendCondition = useCallback(() => {
+    setConditions((prevConditions) =>
+      prevConditions.concat({
+        id: uuidv4(),
+        subConditions: [],
+      })
+    );
+  }, []);
+
+  const appendSubCondition: AppendSubCondition = useCallback((props) => {
+    setUnusedSubConditions((prevUnusedSubConditions) =>
+      prevUnusedSubConditions.concat({
+        id: uuidv4(),
+        ...props,
+      })
+    );
+  }, []);
+
+  const deleteCondition = useCallback((conditionId: string) => {
+    setConditions((prevConditions) =>
+      prevConditions.filter((c) => c.id !== conditionId)
+    );
+  }, []);
 
   const deleteSubCondition: DeleteSubCondition = useCallback(
     ({ conditionId, subConditionId }) => {
@@ -113,7 +163,10 @@ const TaskFormContextProvider = ({ children }: { children?: ReactNode }) => {
     unusedSubConditions,
     conditions,
     moveSubCondition,
+    deleteCondition,
     deleteSubCondition,
+    appendCondition,
+    appendSubCondition,
   };
 
   return (
