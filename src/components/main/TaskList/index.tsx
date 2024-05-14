@@ -6,7 +6,7 @@ import TaskListSkeleton from '../TaskListSkeleton';
 
 const TaskList = () => {
   const [loading, setLoading] = useState(true);
-  const { jobTasks } = useJobTasks();
+  const { jobTasks, activeTask } = useJobTasks();
 
   useEffect(() => {
     setLoading(false);
@@ -26,6 +26,7 @@ const TaskList = () => {
               deleteAllTasks();
             }
           }}
+          disabled={activeTask !== undefined}
         >
           Delete All Tasks
         </button>

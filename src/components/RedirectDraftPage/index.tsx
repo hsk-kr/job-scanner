@@ -1,4 +1,4 @@
-import { loadDraftTaskFormData } from '@/utils/storage';
+import { getDraftTaskFormData } from '@/utils/storage';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -6,7 +6,7 @@ const RedirectDraftPage = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    loadDraftTaskFormData().then((data) => {
+    getDraftTaskFormData().then((data) => {
       if (data) {
         navigate(
           `/task-form?isEdit=${data.isEdit.toString()}&id=${data.taskId || ''}`

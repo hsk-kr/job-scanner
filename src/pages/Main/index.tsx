@@ -3,6 +3,7 @@ import Header from '@/components/main/Header';
 import styled from '@emotion/styled';
 import Divider from '@mui/material/Divider';
 import RedirectDraftPage from '@/components/RedirectDraftPage';
+import ErrorBoundary from '@/components/ErrorBoundary';
 
 const Container = styled.div`
   display: flex;
@@ -12,12 +13,14 @@ const Container = styled.div`
 
 const Main = () => {
   return (
-    <Container>
-      <RedirectDraftPage />
-      <Header />
-      <Divider />
-      <TaskList />
-    </Container>
+    <ErrorBoundary>
+      <Container>
+        <RedirectDraftPage />
+        <Header />
+        <Divider />
+        <TaskList />
+      </Container>
+    </ErrorBoundary>
   );
 };
 

@@ -8,11 +8,7 @@ import {
   scrollToTheBottom,
   scrollToTheJobPost,
 } from '@/utils/linkedin/dom';
-import {
-  addUpActiveTask,
-  finishTask,
-  getProcessingTask,
-} from '@/utils/storage';
+import { addUpActiveTask, finishTask, getActiveTask } from '@/utils/storage';
 import { delay } from '@/utils/time';
 
 const genearatorJobPosts = async function* () {
@@ -39,18 +35,18 @@ const genearatorJobPosts = async function* () {
     });
   };
 
-  let processingTask = await getProcessingTask();
+  let activeTask = await getActiveTask();
 
-  while (processingTask) {
+  while (activeTask) {
     // There is no task in the progress
-    if (!processingTask) {
+    if (!activeTask) {
       return {
-        processingTask,
+        activeTask,
         value: null,
       };
     }
 
-    await delay(processingTask.delay);
+    await delay(activeTask.delay);
     await delayUntilDoneLoading();
     await scrollToTheBottom(); // to load all job posts.
 
@@ -58,11 +54,11 @@ const genearatorJobPosts = async function* () {
     let count = jobList.length;
 
     for (let i = 0; i < count; i++) {
-      processingTask = await getProcessingTask();
+      activeTask = await getActiveTask();
       // There is no task in the progress
-      if (!processingTask) {
+      if (!activeTask) {
         return {
-          processingTask,
+          activeTask,
           value: null,
         };
       }
@@ -79,7 +75,7 @@ const genearatorJobPosts = async function* () {
         continue;
       }
 
-      await delay(processingTask.delay);
+      await delay(activeTask.delay);
 
       // Sometimes, loading of the job post doesn't finish,
       // when it happens, click another item then click back to the item.
@@ -107,14 +103,14 @@ const genearatorJobPosts = async function* () {
 
         // it will increase i by 1 and will come back to this job post in the next step.
         i--;
-        await delay(processingTask.delay);
+        await delay(activeTask.delay);
         continue;
       }
 
       const jobInfo = getJobInfo();
       // Returns jobInfo
       yield {
-        processingTask,
+        activeTask,
         value: jobInfo,
       };
     }
@@ -125,13 +121,13 @@ const genearatorJobPosts = async function* () {
     // Last Page
     if (!success) {
       return {
-        processingTask,
+        activeTask,
         value: null,
       };
     }
 
     await delayUntilDoneLoading();
-    processingTask = await getProcessingTask();
+    activeTask = await getActiveTask();
   }
 };
 
@@ -141,7 +137,7 @@ const crawlJobPosts = async () => {
 
   try {
     for await (const jobPost of genearatorJobPosts()) {
-      taskId = jobPost.processingTask.id;
+      taskId = jobPost.activeTask.id;
 
       // add a job into the storage
       if (
@@ -149,7 +145,7 @@ const crawlJobPosts = async () => {
         checkJobConditions(
           jobPost.value.jobTitle,
           removeHTMLTags(jobPost.value.jobDescription),
-          jobPost.processingTask.jobConditions
+          jobPost.activeTask.jobConditions
         )
       ) {
         // Remove jobDecsription as it takes too much space
@@ -160,7 +156,7 @@ const crawlJobPosts = async () => {
     }
 
     if (taskId) {
-      await finishTask(taskId, {
+      await finishTask({
         status: 'done',
         message: 'Done job searching.',
       });

@@ -7,7 +7,6 @@ import {
   deleteTask,
   finishTask,
   startTask,
-  STORAGE_VERSION,
   getTask,
 } from '@/utils/storage';
 import {
@@ -59,11 +58,8 @@ const JobTaskContextProvider = ({ children }: { children?: ReactNode }) => {
     refreshJobTasks();
   };
 
-  const finishJobTask: JobTaskContext['finishJobTask'] = async (
-    taskId,
-    data
-  ) => {
-    const result = await finishTask(taskId, data);
+  const finishJobTask: JobTaskContext['finishJobTask'] = async (data) => {
+    const result = await finishTask(data);
     refreshJobTasks();
     return result;
   };
@@ -98,14 +94,8 @@ const JobTaskContextProvider = ({ children }: { children?: ReactNode }) => {
   useEffect(() => {
     if (!chrome.storage) return;
 
-    chrome.storage.onChanged.addListener((changes) => {
-      for (const [key] of Object.entries(changes)) {
-        switch (key) {
-          case STORAGE_VERSION:
-            refreshJobTasks();
-            break;
-        }
-      }
+    chrome.storage.onChanged.addListener(() => {
+      refreshJobTasks();
     });
 
     refreshJobTasks();

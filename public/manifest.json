@@ -13,7 +13,7 @@
     "48": "icon48.png",
     "128": "icon128.png"
   },
-  "permissions": ["storage"],
+  "permissions": ["storage", "unlimitedStorage"],
   "content_scripts": [
     {
       "matches": ["https://www.linkedin.com/*"],

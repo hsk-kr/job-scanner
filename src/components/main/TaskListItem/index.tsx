@@ -42,7 +42,16 @@ const TaskListItem = ({
   const canDownload = status !== 'ready';
   const canDuplicate = activeTask === undefined;
   const canDelete = activeTask === undefined;
-  const canEdit = activeTask === undefined && status !== 'done';
+  const canEdit =
+    activeTask === undefined && status !== 'done' && status !== 'stopped';
+
+  // when this task is the activeTask, shows up the number from fetching the activeTask
+  // it's more benefitical in terms of time to fetch the data, this is why
+  // addUpActiveTask doesn't update the list, instead it updates only activeTask field in the store
+  const currentNumFoundJobs =
+    activeTask?.id === id ? activeTask.foundJobs?.length : foundJobs?.length;
+  const currentNumOfTotalJobs =
+    activeTask?.id === id ? activeTask.numOfTotalJobs : numOfTotalJobs;
 
   return (
     <div className="flex flex-col gap-2">
@@ -50,11 +59,11 @@ const TaskListItem = ({
       <div className="relative stats bg-white text-primary-content">
         <div className="stat">
           <div className="stat-title text-black">Found Jobs</div>
-          <div className="stat-value">{foundJobs?.length ?? 0}</div>
+          <div className="stat-value">{currentNumFoundJobs ?? 0}</div>
         </div>
         <div className="stat">
           <div className="stat-title text-black">Searched Jobs</div>
-          <div className="stat-value">{numOfTotalJobs ?? 0}</div>
+          <div className="stat-value">{currentNumOfTotalJobs ?? 0}</div>
         </div>
         <div className="stat flex flex-col">
           <span className="text-sm text-gray-600">{updatedAt}</span>
@@ -81,7 +90,7 @@ const TaskListItem = ({
                     className="text-gray-600 text-xl cursor-pointer hover:scale-110 transition-all"
                     onClick={() => {
                       if (confirm('Do you really want to stop the task?\n')) {
-                        finishJobTask(id, {
+                        finishJobTask({
                           status: 'stopped',
                           message: ' Manually, stopped.',
                         });

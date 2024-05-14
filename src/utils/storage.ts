@@ -1,251 +1,226 @@
 import { v4 as uuidv4 } from 'uuid';
 import { JobInfo, JobTask, JobTaskStatus } from '@/types/job';
-import { StorageData, TaskFormDraft } from '@/types/storage';
+import { TaskFormDraft } from '@/types/storage';
 
-// When the structure of data is changed, upgrade the version.
-// If you update the version, users will loss their data.
-export const STORAGE_VERSION = 'v1';
+// in the storage, this field is treated specially on the purpose to store the id of the processing task
+const ACTIVE_TASK_ID = 'activeTaskId';
+const DRAFT = 'draft'; // key to save draft data in the sessino storage
 
-// dependencies: [getTasks]
+/**
+ * Add a task into the chrome local storage.
+ * @param jobTask task data to store in the local storage
+ */
 export const createTask = async (
   jobTask: Omit<
     JobTask,
     'id' | 'status' | 'updatedAt' | 'foundJobs' | 'numOfTotalJobs'
   >
 ) => {
-  const tasks = await getTasks();
+  const newTask = {
+    id: uuidv4(),
+    status: 'ready',
+    taskName: jobTask.taskName,
+    delay: jobTask.delay,
+    updatedAt: new Date().toLocaleString(),
+    jobConditions: jobTask.jobConditions,
+    foundJobs: [],
+    numOfTotalJobs: 0,
+  };
 
   await chrome.storage.local.set({
-    [STORAGE_VERSION]: {
-      ...(await chrome.storage.local.get([STORAGE_VERSION])),
-      tasks: tasks.concat({
-        id: uuidv4(),
-        status: 'ready',
-        taskName: jobTask.taskName,
-        delay: jobTask.delay,
-        updatedAt: new Date().toLocaleString(),
-        jobConditions: jobTask.jobConditions,
-        foundJobs: [],
-        numOfTotalJobs: 0,
-      }),
-    },
+    [newTask.id]: newTask,
   });
 };
 
-// dependencies: [getTasks]
+/**
+ * Update a task from the chrome local storage.
+ * @param taskId taskId of the task to be updated
+ * @param jobTask values to be updated. The fields not included in this field will remain in the data
+ * @returns
+ */
 export const updateTask = async (taskId: string, jobTask: Partial<JobTask>) => {
-  const tasks = await getTasks();
+  const task = await getTask(taskId);
+  if (!task) {
+    console.error('cannot find the task:' + taskId);
+    return;
+  }
 
-  const versionData = await chrome.storage.local.get(STORAGE_VERSION);
-  const data = (versionData[STORAGE_VERSION] ?? {}) as StorageData;
-
-  // If there are addtional fields besides tasks, they also need to be set.
+  const updatedTask = {
+    ...task,
+    ...jobTask,
+    updatedAt: new Date().toLocaleString(),
+    id: taskId,
+  };
   await chrome.storage.local.set({
-    [STORAGE_VERSION]: {
-      ...data,
-      tasks: tasks.map((task) => {
-        if (task.id === taskId) {
-          return {
-            ...task,
-            ...jobTask,
-            updatedAt: new Date().toLocaleString(),
-            id: taskId,
-          };
-        }
-
-        return task;
-      }),
-    },
+    [taskId]: updatedTask,
   });
 };
 
-export const updateActiveTask = async (
-  numOfTotalJobs: number,
-  foundJobs: JobInfo[]
-) => {
-  const versionData = await chrome.storage.local.get(STORAGE_VERSION);
-  const data = (versionData[STORAGE_VERSION] ?? {}) as StorageData;
-
-  await chrome.storage.local.set({
-    [STORAGE_VERSION]: {
-      ...data,
-      activeTask: {
-        numOfTotalJobs,
-        foundJobs,
-      },
-    },
-  });
-};
-
+/**
+ * Increase numberOfJob by 1 and append jobHaveFound param to the foundJobs field of the active task
+ * @param jobHaveFound to be appended to the foundJobs field, if it is null, it does nothing
+ */
 export const addUpActiveTask = async (jobHaveFound: JobInfo | null) => {
-  const versionData = await chrome.storage.local.get(STORAGE_VERSION);
-  const data = (versionData[STORAGE_VERSION] ?? {}) as StorageData;
+  const activeTask = await getActiveTask();
+  if (activeTask === null) {
+    console.error('Cannot find the active task');
+    return;
+  }
 
   await chrome.storage.local.set({
-    [STORAGE_VERSION]: {
-      ...data,
-      activeTask: {
-        numOfTotalJobs: (data.activeTask?.numOfTotalJobs ?? 0) + 1,
-        foundJobs: jobHaveFound
-          ? (data.activeTask?.foundJobs ?? []).concat(jobHaveFound)
-          : data.activeTask?.foundJobs,
-      },
-    },
-  });
-};
-
-// dependencies: [getTasks]
-export const getTask = async (taskId: string) => {
-  const tasks = await getTasks();
-
-  return tasks.find((task) => task.id === taskId);
-};
-
-export const getTasks = async () => {
-  if (!window.chrome?.storage?.local) return [];
-
-  const versionData = await chrome.storage.local.get(STORAGE_VERSION);
-  const data = (versionData[STORAGE_VERSION] ?? {}) as StorageData;
-
-  if (!data.tasks) return [];
-
-  data.tasks.sort((a, b) => Date.parse(b.updatedAt) - Date.parse(a.updatedAt));
-  return data.tasks ?? [];
-};
-
-// dependencies: [getTasks]
-export const deleteTask = async (taskId: string) => {
-  const tasks = await getTasks();
-
-  const versionData = await chrome.storage.local.get(STORAGE_VERSION);
-  const data = (versionData[STORAGE_VERSION] ?? {}) as StorageData;
-
-  await chrome.storage.local.set({
-    [STORAGE_VERSION]: {
-      ...data,
-      tasks: tasks.filter((task) => task.id !== taskId),
-    },
-  });
-};
-
-export const deleteAllTasks = async () => {
-  const versionData = await chrome.storage.local.get(STORAGE_VERSION);
-  const data = (versionData[STORAGE_VERSION] ?? {}) as StorageData;
-
-  await chrome.storage.local.set({
-    [STORAGE_VERSION]: {
-      ...data,
-      tasks: [],
-    },
-  });
-};
-
-export const startTask = async (taskId: string) => {
-  const versionData = await chrome.storage.local.get(STORAGE_VERSION);
-  const data = (versionData[STORAGE_VERSION] ?? {}) as StorageData;
-
-  await chrome.storage.local.set({
-    [STORAGE_VERSION]: {
-      ...data,
-      tasks: (data.tasks ?? []).map((task) =>
-        task.id === taskId
-          ? {
-              ...task,
-              status: 'processing',
-            }
-          : task
-      ),
+    [activeTask.id]: {
+      ...activeTask,
+      numOfTotalJobs: (activeTask?.numOfTotalJobs ?? 0) + 1,
+      foundJobs: jobHaveFound
+        ? (activeTask?.foundJobs ?? []).concat(jobHaveFound)
+        : activeTask?.foundJobs,
     },
   });
 };
 
 /**
- * Update task's status with a log message dependencies: [getTask]
- * @param taskId
- * @param data numOfFoundJobs, numOfTotalJobs and message are used to generate a log message
- * @returns
+ * Returns tasks from the local storage
+ * @returns JobTask[]
  */
-export const finishTask = async (
-  taskId: string,
-  data: {
-    status: Exclude<JobTaskStatus, 'processing' | 'ready'>;
-    message: string;
+export const getTasks = async (): Promise<JobTask[]> => {
+  if (!window.chrome?.storage?.local) return [];
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { activeTaskId, ...tasks } = await chrome.storage.local.get();
+
+  const tasksAsArr = (
+    Object.keys(tasks ?? {}).map((k) => tasks[k]) as JobTask[]
+  ).sort((a, b) => Date.parse(b.updatedAt) - Date.parse(a.updatedAt));
+
+  return tasksAsArr;
+};
+
+/**
+ * Delete a tasks from the chrome local storage.
+ * @param taskId the id of a task to be deleted
+ */
+export const deleteTask = async (taskId: string) => {
+  await chrome.storage.local.remove(taskId);
+};
+
+/**
+ * Delete all tasks from the chorme local storage.
+ */
+export const deleteAllTasks = async () => {
+  await chrome.storage.local.clear();
+};
+
+/**
+ * Start a task, basically, it sets the ACTIVE_TASK_ID from the chrome local storage
+ * and the content script that executes on the browser will detect the task and will start
+ * to crawl the job posts on the LinkedIn job list page
+ * @param taskId the id of the task to be started
+ */
+export const startTask = async (taskId: string) => {
+  const task = await getTask(taskId);
+  if (!task) {
+    console.error('cannot find task to start:' + taskId);
+    return;
   }
-) => {
-  const {
-    [STORAGE_VERSION]: { tasks, activeTask },
-  }: Record<string, StorageData> = await chrome.storage.local.get([
-    STORAGE_VERSION,
-  ]);
-
-  const processingTask = await getProcessingTask(tasks ?? []);
-
-  if (!processingTask) return false;
-
-  processingTask.status = data.status;
-  processingTask.logMessage = `${activeTask?.foundJobs?.length ?? -1} out of ${
-    activeTask?.numOfTotalJobs ?? -1
-  } Jobs found.\n\n${data.message}`;
-  processingTask.foundJobs = activeTask?.foundJobs ?? [];
-
-  await updateTask(taskId, processingTask);
-  return true;
-};
-
-// dependencies [getTask]
-export const getProcessingTask = async (tasks?: JobTask[]) => {
-  const _tasks = tasks ?? (await getTasks());
-  return _tasks.find((task) => task.status === 'processing');
-};
-
-export const clearDraftTaskFormData = async () => {
-  if (!window.chrome?.storage?.local) return;
-  const versionData = await chrome.storage.local.get(STORAGE_VERSION);
-  const data = (versionData[STORAGE_VERSION] ?? {}) as StorageData;
 
   await chrome.storage.local.set({
-    [STORAGE_VERSION]: {
-      ...data,
-      draft: undefined,
+    [taskId]: {
+      ...task,
+      status: 'processing',
     },
+    [ACTIVE_TASK_ID]: taskId,
   });
+};
+
+/**
+ * Finish the active task with the status message and it updates the logMessage field
+ * of the activeTask to the numberOfJobs it founds.
+ * @param data status: finish or stopped message: it will be stored in logMessage field
+ */
+export const finishTask = async (data: {
+  status: Exclude<JobTaskStatus, 'processing' | 'ready'>;
+  message: string;
+}) => {
+  const activeTask = await getActiveTask();
+  if (!activeTask) {
+    console.error('cannot find the activeTask to finish');
+    return;
+  }
+
+  activeTask.status = data.status;
+  activeTask.logMessage = `${activeTask?.foundJobs?.length ?? -1} out of ${
+    activeTask?.numOfTotalJobs ?? -1
+  } Jobs found.\n\n${data.message}`;
+
+  await chrome.storage.local.remove(ACTIVE_TASK_ID);
+  await chrome.storage.local.set({
+    [activeTask.id]: { ...activeTask },
+  });
+};
+
+/**
+ * Clear draft the data you should call this function to clear the data
+ * and prevent to redirect when users enter the main page
+ */
+export const clearDraftTaskFormData = async () => {
+  if (!window.chrome?.storage?.session) return;
+  await chrome.storage.session.remove(DRAFT);
 };
 
 let tmDraftTaskFormData: NodeJS.Timeout;
-export const draftTaskFormData = (
+/**
+ * Set draft data. the data is stored in the session storage which means when the tab is closed, the data is removed.
+ * @param draftData the data will be stored as the draft data
+ * @param delay debounce time.
+ * It's applied to store the draft data,
+ * which means if there more actions within the certain time,
+ * the action ignores the previous action and restarts.
+ */
+export const setDraftTaskFormData = (
   draftData: TaskFormDraft,
-  interval = 1000
+  delay = 1000
 ) => {
-  if (!window.chrome?.storage?.local) return () => {};
+  if (!window.chrome?.storage?.session) return () => {};
 
-  let data: StorageData;
-  chrome.storage.local.get(STORAGE_VERSION).then((versionData) => {
-    data = (versionData[STORAGE_VERSION] ?? {}) as StorageData;
-  });
-
-  clearInterval(tmDraftTaskFormData); // debounce
-  // using interval, make it able to stop while loading
-  tmDraftTaskFormData = setInterval(() => {
-    if (!data) return;
-
-    chrome.storage.local.set({
-      [STORAGE_VERSION]: {
-        ...data,
-        draft: draftData,
-      },
+  clearTimeout(delay);
+  tmDraftTaskFormData = setTimeout(() => {
+    chrome.storage.session.set({
+      [DRAFT]: draftData,
     });
-    clearInterval(tmDraftTaskFormData); // stop logic the save logic must be executed once
-  }, interval);
+  }, delay);
   return () => {
-    clearInterval(tmDraftTaskFormData);
+    clearTimeout(tmDraftTaskFormData);
   };
 };
 
-export const loadDraftTaskFormData =
-  async (): Promise<TaskFormDraft | null> => {
-    if (!window.chrome?.storage?.local) return null;
-    const versionData = await chrome.storage.local.get(STORAGE_VERSION);
-    const data = (versionData[STORAGE_VERSION] ?? {}) as StorageData;
+/**
+ * Returns the draft data stored from the chrome storage session
+ * @returns draftdata
+ */
+export const getDraftTaskFormData = async (): Promise<TaskFormDraft | null> => {
+  if (!window.chrome?.storage?.session) return null;
+  return ((await chrome.storage.session.get(DRAFT)) ?? {})[DRAFT] ?? null;
+};
 
-    return data.draft ?? null;
-  };
+/**
+ * returns if there is a task that has the state of 'processing', otherwise returns null
+ * @returns JobTask or null
+ */
+export const getActiveTask = async (): Promise<JobTask | null> => {
+  if (!chrome.storage.local) return null;
+  const activeTaskId = ((await chrome.storage.local.get(ACTIVE_TASK_ID)) ?? {})[
+    ACTIVE_TASK_ID
+  ];
+  if (!activeTaskId) return null;
+  return await getTask(activeTaskId);
+};
+
+/**
+ * Returns a task corresponds to the taskId, if it does not find the task, returns null.
+ * @param taskId taskId of the task will be retrieved
+ * @returns JobTask | null
+ */
+export const getTask = async (taskId: string): Promise<JobTask | null> => {
+  if (!chrome.storage.local) return null;
+  return ((await chrome.storage.local.get(taskId)) ?? {})[taskId] ?? null;
+};

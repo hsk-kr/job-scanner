@@ -11,9 +11,9 @@ import { v4 as uuidv4 } from 'uuid';
 import { useSearchParams } from 'react-router-dom';
 import { ITaskForm } from '@/types/taskform';
 import {
-  draftTaskFormData,
+  setDraftTaskFormData,
   getTask,
-  loadDraftTaskFormData,
+  getDraftTaskFormData,
 } from '@/utils/storage';
 import Loading from '@/components/Loading';
 import { UseFormReturn, useForm } from 'react-hook-form';
@@ -190,7 +190,7 @@ const TaskFormContextProvider = ({ children }: { children?: ReactNode }) => {
   useEffect(() => {
     setLoading(true);
     const loadTask = async () => {
-      const draftData = await loadDraftTaskFormData();
+      const draftData = await getDraftTaskFormData();
       if (draftData) {
         setInitialValue({
           taskName: draftData.value.taskName ?? '',
@@ -211,7 +211,7 @@ const TaskFormContextProvider = ({ children }: { children?: ReactNode }) => {
       } else {
         setInitialValue({
           taskName: '',
-          delay: '',
+          delay: '1000',
           jobConditions: [
             {
               id: uuidv4(),
@@ -239,7 +239,7 @@ const TaskFormContextProvider = ({ children }: { children?: ReactNode }) => {
   }, [initialValue]);
 
   useEffect(() => {
-    const release = draftTaskFormData({
+    const release = setDraftTaskFormData({
       taskId,
       isEdit,
       value: {
