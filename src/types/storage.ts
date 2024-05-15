@@ -10,3 +10,20 @@ export interface TaskFormDraft {
     jobConditions?: JobCondition[];
   };
 }
+
+export interface QuerySelectors {
+  jobTitle: string;
+  jobDescription: string;
+  jobAdddtionalInfo: string;
+  jobListPost: string;
+  clickItemInJobPost: string;
+  activeJobPostInJobPost: string;
+  jobListContainer: string;
+  page: string;
+  activePageInPage: string;
+  clickItemInPage: string;
+}
+
+export type QuerySelectorDescriptions = QuerySelectors;
+
+export type QuerySelectorsKey = keyof QuerySelectors;

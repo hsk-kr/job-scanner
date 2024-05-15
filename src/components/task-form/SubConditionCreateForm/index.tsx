@@ -10,6 +10,7 @@ const SubConditionCreateForm = () => {
   } = useForm<ITaskSubConditionForm>({
     defaultValues: {
       caseInsensitive: true,
+      operator: '>=',
     },
   });
   const { appendSubCondition } = useTaskForm();

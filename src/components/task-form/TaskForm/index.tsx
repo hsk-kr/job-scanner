@@ -6,7 +6,7 @@ import { Fragment, useState } from 'react';
 import { ITaskForm } from '@/types/taskform';
 import { SubmitHandler } from 'react-hook-form';
 import SubConditionCreateForm from '../SubConditionCreateForm';
-import ConditionCheckModal from '../ConditionCheckModal';
+import ConditionCheckModal from '@/components/modals/ConditionCheckModal';
 import { clearDraftTaskFormData } from '@/utils/storage';
 import { useJobTasks } from '@/stores/job-task';
 import Loading from '@/components/Loading';

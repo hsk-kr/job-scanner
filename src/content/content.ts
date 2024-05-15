@@ -50,7 +50,7 @@ const genearatorJobPosts = async function* () {
     await delayUntilDoneLoading();
     await scrollToTheBottom(); // to load all job posts.
 
-    let [jobList, clickJob] = getJobList();
+    let [jobList, clickJob] = await getJobList();
     let count = jobList.length;
 
     for (let i = 0; i < count; i++) {
@@ -64,14 +64,14 @@ const genearatorJobPosts = async function* () {
       }
 
       // since it returns visible job list, gets joblist every time.
-      scrollToTheJobPost(jobList[i]);
+      await scrollToTheJobPost(jobList[i]);
       await delayUntilDoneLoading();
 
-      [jobList, clickJob] = getJobList();
+      [jobList, clickJob] = await getJobList();
       count = jobList.length;
 
       // When the div of a job post is not usual, skip the job post.
-      if (!clickJob(i)) {
+      if (!(await clickJob(i))) {
         continue;
       }
 
@@ -91,9 +91,9 @@ const genearatorJobPosts = async function* () {
         // click another post
         let isNormalJobPost: boolean;
         if (i === 0) {
-          isNormalJobPost = clickJob(1);
+          isNormalJobPost = await clickJob(1);
         } else {
-          isNormalJobPost = clickJob(0);
+          isNormalJobPost = await clickJob(0);
         }
 
         if (!isNormalJobPost) {
@@ -107,7 +107,7 @@ const genearatorJobPosts = async function* () {
         continue;
       }
 
-      const jobInfo = getJobInfo();
+      const jobInfo = await getJobInfo();
       // Returns jobInfo
       yield {
         activeTask,
@@ -116,7 +116,7 @@ const genearatorJobPosts = async function* () {
     }
 
     // next page and wait
-    const success = moveToNextJobList();
+    const success = await moveToNextJobList();
 
     // Last Page
     if (!success) {
@@ -158,7 +158,6 @@ const crawlJobPosts = async () => {
     if (taskId) {
       await finishTask({
         status: 'done',
-        message: 'Done job searching.',
       });
     }
   } catch (e) {

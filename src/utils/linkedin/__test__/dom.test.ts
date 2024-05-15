@@ -1,9 +1,7 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { beforeAll, describe, expect, test, vi } from 'vitest';
 import {
   getJobInfo,
   getJobList,
-  getSelectedJobIndex,
   isLoading,
   moveToNextJobList,
   removeHTMLTags,
@@ -22,8 +20,8 @@ describe('JobList Page', () => {
   });
 
   describe('getJobInfo', () => {
-    test('should return correct job information.', () => {
-      const jobInfo = getJobInfo();
+    test('should return correct job information.', async () => {
+      const jobInfo = await getJobInfo();
 
       // Below comments UPDATE START ~ UPDATE END is used to update the test code by linkedin-test-html-generator script
       // linkedin-test-html-generator UPDATE START
@@ -38,23 +36,15 @@ describe('JobList Page', () => {
   });
 
   describe('getJobList', () => {
-    test('the length of the jobList array should be 25.', () => {
-      const [jobList] = getJobList();
+    test('the length of the jobList array should be 25.', async () => {
+      const [jobList] = await getJobList();
 
       expect(jobList.length).toBe(25);
     });
   });
 
-  describe('getSelectedJobIndex', () => {
-    test('should return 0.', () => {
-      const selectedJobIndex = getSelectedJobIndex();
-
-      expect(selectedJobIndex).toBe(0);
-    });
-  });
-
   describe('moveToNextJobList', () => {
-    test('should click the next page button.', () => {
+    test('should click the next page button.', async () => {
       const linkButtons = document.querySelectorAll<HTMLButtonElement>(
         '.jobs-search-pagination__indicator-button'
       );
@@ -62,12 +52,12 @@ describe('JobList Page', () => {
       const button = linkButtons[1];
 
       button?.addEventListener('click', handleNextPageClick);
-      moveToNextJobList();
+      await moveToNextJobList();
       expect(handleNextPageClick).toHaveBeenCalledOnce();
     });
 
-    test('should return true.', () => {
-      expect(moveToNextJobList()).toBe(true);
+    test('should return true.', async () => {
+      expect(await moveToNextJobList()).toBe(true);
     });
   });
 

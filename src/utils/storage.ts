@@ -1,9 +1,14 @@
 import { v4 as uuidv4 } from 'uuid';
 import { JobInfo, JobTask, JobTaskStatus } from '@/types/job';
-import { TaskFormDraft } from '@/types/storage';
+import { QuerySelectors, TaskFormDraft } from '@/types/storage';
+import { querySelectors } from './linkedin/dom';
 
-// in the storage, this field is treated specially on the purpose to store the id of the processing task
+// lcoal
+// in the local storage, except those fields are tasks.
 const ACTIVE_TASK_ID = 'activeTaskId';
+const CUSTOM_QUERY_SELECTORS = 'customQuerySelectors';
+
+// session
 const DRAFT = 'draft'; // key to save draft data in the sessino storage
 
 /**
@@ -85,8 +90,13 @@ export const addUpActiveTask = async (jobHaveFound: JobInfo | null) => {
 export const getTasks = async (): Promise<JobTask[]> => {
   if (!window.chrome?.storage?.local) return [];
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { activeTaskId, ...tasks } = await chrome.storage.local.get();
+  const {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    [ACTIVE_TASK_ID]: activeTaskId,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    [CUSTOM_QUERY_SELECTORS]: customQuerySelectors,
+    ...tasks
+  } = await chrome.storage.local.get();
 
   const tasksAsArr = (
     Object.keys(tasks ?? {}).map((k) => tasks[k]) as JobTask[]
@@ -133,13 +143,12 @@ export const startTask = async (taskId: string) => {
 };
 
 /**
- * Finish the active task with the status message and it updates the logMessage field
+ * Finish the active task with the status
  * of the activeTask to the numberOfJobs it founds.
- * @param data status: finish or stopped message: it will be stored in logMessage field
+ * @param data status: finish or stopped
  */
 export const finishTask = async (data: {
   status: Exclude<JobTaskStatus, 'processing' | 'ready'>;
-  message: string;
 }) => {
   const activeTask = await getActiveTask();
   if (!activeTask) {
@@ -148,9 +157,6 @@ export const finishTask = async (data: {
   }
 
   activeTask.status = data.status;
-  activeTask.logMessage = `${activeTask?.foundJobs?.length ?? -1} out of ${
-    activeTask?.numOfTotalJobs ?? -1
-  } Jobs found.\n\n${data.message}`;
 
   await chrome.storage.local.remove(ACTIVE_TASK_ID);
   await chrome.storage.local.set({
@@ -203,7 +209,7 @@ export const getDraftTaskFormData = async (): Promise<TaskFormDraft | null> => {
 };
 
 /**
- * returns if there is a task that has the state of 'processing', otherwise returns null
+ * Returns if there is a task that has the state of 'processing', otherwise returns null
  * @returns JobTask or null
  */
 export const getActiveTask = async (): Promise<JobTask | null> => {
@@ -216,11 +222,45 @@ export const getActiveTask = async (): Promise<JobTask | null> => {
 };
 
 /**
- * Returns a task corresponds to the taskId, if it does not find the task, returns null.
+ * Returns a task corresponds to the taskId, if it does not find the task, returns null
  * @param taskId taskId of the task will be retrieved
  * @returns JobTask | null
  */
 export const getTask = async (taskId: string): Promise<JobTask | null> => {
   if (!chrome.storage.local) return null;
   return ((await chrome.storage.local.get(taskId)) ?? {})[taskId] ?? null;
+};
+
+/**
+ * Returns custom query selectors the user set in the setting modal
+ * @returns Part of querySelectors
+ */
+export const getCustomQuerySelectors =
+  async (): Promise<QuerySelectors | null> => {
+    if (import.meta.env.DEV) return querySelectors;
+
+    return (
+      ((await chrome.storage.local.get(CUSTOM_QUERY_SELECTORS)) ?? {})[
+        CUSTOM_QUERY_SELECTORS
+      ] ?? { ...querySelectors }
+    );
+  };
+
+/**
+ * Update custom query selectors from the storage
+ * @param newQuerySelectors querySelctors to be updated
+ */
+export const setCustomQuerySelectors = async (
+  newQuerySelectors: QuerySelectors
+) => {
+  await chrome.storage.local.set({
+    [CUSTOM_QUERY_SELECTORS]: newQuerySelectors,
+  });
+};
+
+/**
+ * reset custom query selectors as the initial value
+ */
+export const resetCustomQuerySelectors = async () => {
+  await setCustomQuerySelectors({ ...querySelectors });
 };

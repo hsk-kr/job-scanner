@@ -1,15 +1,66 @@
 import { JobInfo } from '@/types/job';
+import { getCustomQuerySelectors } from '../storage';
+import {
+  QuerySelectorDescriptions,
+  QuerySelectors,
+  QuerySelectorsKey,
+} from '@/types/storage';
 
-export const getJobInfo = (): JobInfo => {
-  const jobTitle = document.querySelector(
-    '.job-details-jobs-unified-top-card__job-title'
-  );
-  const jobDescription = document.querySelector(
-    '.jobs-description-content__text > div'
-  );
-  const jobAdddtionalInfo = document.querySelector(
-    '.job-details-jobs-unified-top-card__primary-description-container'
-  );
+type ClickableHTMLElement = HTMLElement & { click: VoidFunction };
+
+export const querySelectors: QuerySelectors = {
+  jobTitle: '.job-details-jobs-unified-top-card__job-title',
+  jobDescription: '.jobs-description__container',
+  jobAdddtionalInfo:
+    '.job-details-jobs-unified-top-card__primary-description-container',
+  jobListPost: '.jobs-search-results-list > ul > li',
+  clickItemInJobPost: 'div > div',
+  activeJobPostInJobPost:
+    'div[class*="jobs-search-results-list__list-item--active"]',
+  jobListContainer: '.jobs-search-results-list',
+  page: 'ul.jobs-search-pagination__pages > li',
+  activePageInPage: 'button.jobs-search-pagination__indicator-button--active',
+  clickItemInPage: 'button',
+};
+
+export const querySelectorDesciptions: QuerySelectorDescriptions = {
+  jobTitle: 'job title element.',
+  jobDescription: 'job description.',
+  jobAdddtionalInfo: 'element that includes company name.',
+  jobListPost: 'job post in the job list.',
+  clickItemInJobPost: 'element shows a job post when clicked.',
+  activeJobPostInJobPost: `element shown it as selected job post in the job post element`,
+  jobListContainer: 'element that includes job posts and is scrollable.',
+  page: `page.`,
+  activePageInPage: 'element shown it as selected page in the page element.',
+  clickItemInPage: `html element redirects when clicked.`,
+};
+
+export const getQuerySelectors = async () => {
+  const customQuerySelectors = await getCustomQuerySelectors();
+
+  return {
+    ...querySelectors,
+    ...customQuerySelectors,
+  };
+};
+
+export const getElement = async <T extends HTMLElement>(
+  key: QuerySelectorsKey
+) => {
+  return document.querySelector<T>((await getQuerySelectors())[key]);
+};
+
+export const getElements = async <T extends HTMLElement>(
+  key: QuerySelectorsKey
+) => {
+  return document.querySelectorAll<T>((await getQuerySelectors())[key]);
+};
+
+export const getJobInfo = async (): Promise<JobInfo> => {
+  const jobTitle = await getElement('jobTitle');
+  const jobDescription = await getElement('jobDescription');
+  const jobAdddtionalInfo = await getElement('jobAdddtionalInfo');
 
   return {
     jobTitle: jobTitle?.textContent?.trim() ?? '',
@@ -19,52 +70,27 @@ export const getJobInfo = (): JobInfo => {
   };
 };
 
-export const getJobList = (): [
-  NodeListOf<HTMLLIElement>,
-  (index: number) => boolean
-] => {
-  const jobList = document.querySelectorAll<HTMLLIElement>(
-    '.jobs-search-results-list > ul > li'
-  );
+export const getJobList = async (): Promise<
+  [NodeListOf<HTMLElement>, (index: number) => Promise<boolean>]
+> => {
+  const jobList = await getElements('jobListPost');
 
-  const clickJob = (index: number) => {
-    const jobList = document.querySelectorAll<HTMLLIElement>(
-      '.jobs-search-results-list > ul > li'
+  const clickJob = async (index: number) => {
+    const jobList = await getElements('jobListPost');
+    const clickableItem = jobList[index].querySelector(
+      (await getQuerySelectors())['clickItemInJobPost']
     );
-    const clickableItem =
-      jobList[index].querySelector<HTMLDivElement>('div > div');
     if (!clickableItem) return false;
-    clickableItem.click();
+    (clickableItem as ClickableHTMLElement)?.click();
     return true;
   };
 
   return [jobList, clickJob];
 };
 
-export const getSelectedJobIndex = (
-  initialJobList?: NodeListOf<HTMLLIElement>
-) => {
-  const jobList =
-    initialJobList ??
-    document.querySelectorAll<HTMLLIElement>(
-      '.jobs-search-results-list > ul > li'
-    );
+export const scrollToTheJobPost = async (target?: HTMLElement) => {
+  const jobListContainer = await getElement('jobListContainer');
 
-  for (let i = 0; i < jobList.length; i++) {
-    const jobListItem = jobList[i];
-    if (
-      jobListItem.querySelector(
-        'div[class*="jobs-search-results-list__list-item--active"]'
-      ) !== null
-    )
-      return i;
-  }
-
-  return null;
-};
-
-export const scrollToTheJobPost = (target?: HTMLElement) => {
-  const jobListContainer = document.querySelector('.jobs-search-results-list');
   if (jobListContainer)
     jobListContainer.scrollTop =
       target !== undefined
@@ -73,15 +99,14 @@ export const scrollToTheJobPost = (target?: HTMLElement) => {
         : jobListContainer.scrollHeight;
 };
 
-export const scrollToTheBottom = (delay = 250) => {
+export const scrollToTheBottom = async (delay = 250) => {
   return new Promise<void>((resolve) => {
     let prevScrollTop = 0;
     let tm: NodeJS.Timeout | undefined = undefined;
 
-    const scroll = () => {
-      const jobListContainer = document.querySelector(
-        '.jobs-search-results-list'
-      );
+    const scroll = async () => {
+      const jobListContainer = await getElement('jobListContainer');
+
       if (!jobListContainer) {
         clearInterval(tm);
         resolve();
@@ -102,22 +127,20 @@ export const scrollToTheBottom = (delay = 250) => {
   });
 };
 
-export const moveToNextJobList = () => {
-  const pages = document.querySelectorAll<HTMLLIElement>(
-    'ul.jobs-search-pagination__pages > li'
-  );
+export const moveToNextJobList = async () => {
+  const querySelectors = await getQuerySelectors();
+  const pages = await getElements('page');
 
   if (pages.length === 0) return false;
 
   for (let i = 0; i < pages.length; i++) {
-    const button = pages[i].querySelector('button');
-    if (
-      button?.classList.contains(
-        'jobs-search-pagination__indicator-button--active'
-      )
-    ) {
+    if (pages[i].querySelector(querySelectors['activePageInPage'])) {
       if (i === pages.length - 1) return false;
-      pages[i + 1]?.querySelector('button')?.click();
+      (
+        pages[i + 1]?.querySelector(
+          querySelectors['clickItemInPage']
+        ) as ClickableHTMLElement
+      )?.click();
       break;
     }
   }

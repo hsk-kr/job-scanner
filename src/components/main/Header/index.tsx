@@ -1,12 +1,19 @@
 import { useJobTasks } from '@/stores/job-task';
 import { Link } from 'react-router-dom';
+import SettingModal from '@/components/modals/SettingModal';
+import { useState } from 'react';
 
 const Header = () => {
   const { activeTask } = useJobTasks();
   const canCreateTask = activeTask === undefined;
+  const [settingModalVisible, setSettingModalVisible] = useState(false);
+
+  const toggleSettingModal = () =>
+    setSettingModalVisible((prevVisible) => !prevVisible);
 
   return (
     <div className="navbar bg-neutral">
+      {settingModalVisible && <SettingModal onClose={toggleSettingModal} />}
       <div className="flex-1">
         <a className="btn btn-ghost text-xl">Job Scanner 1.0.0</a>
       </div>
@@ -37,6 +44,9 @@ const Header = () => {
                   >
                     Viewer
                   </a>
+                </li>
+                <li onClick={toggleSettingModal}>
+                  <a>Setting</a>
                 </li>
               </ul>
             </details>

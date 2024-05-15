@@ -92,7 +92,6 @@ const TaskListItem = ({
                       if (confirm('Do you really want to stop the task?\n')) {
                         finishJobTask({
                           status: 'stopped',
-                          message: ' Manually, stopped.',
                         });
                       }
                     }}

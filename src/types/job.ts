@@ -12,7 +12,6 @@ export interface JobTask {
   updatedAt: string;
   delay: number;
   jobConditions: JobCondition[];
-  logMessage?: string;
   foundJobs?: JobInfo[]; // Set optional to integrate to the old version
   numOfTotalJobs?: number; // Set optional to integrate to the old version
 }
