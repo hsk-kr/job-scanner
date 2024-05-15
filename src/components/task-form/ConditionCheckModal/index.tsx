@@ -96,7 +96,7 @@ const ConditionCheckModal = ({
           className="textarea textarea-primary w-full"
           placeholder="Job Description"
           data-testid="desc"
-          rows={10}
+          rows={11}
           onChange={handleFormChange('description')}
           value={form.description}
         ></textarea>

@@ -6,6 +6,7 @@ body {
   width: 600px;
   height: 600px;
   margin: 0;
+  font-family: 'Roboto', system-ui, sans-serif;
 }
 
 #root {
