@@ -1,50 +1,7 @@
-import styled from '@emotion/styled';
-import IconButton from '@mui/material/IconButton';
-import Typography from '@mui/material/Typography';
-import TextField from '@mui/material/TextField';
-import CloseIcon from '@mui/icons-material/Close';
-import Button from '@mui/material/Button';
 import { JobCondition } from '@/types/job';
 import { ChangeEvent, useState } from 'react';
 import { checkJobConditions } from '@/utils/condition';
-
-const Container = styled.div`
-  position: absolute;
-  left: 8px;
-  top: 8px;
-  right: 8px;
-  bottom: 8px;
-  background-color: #fff;
-  border-radius: 4px;
-  z-index: 5;
-  box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-`;
-
-const ModalHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  height: 48px;
-`;
-
-const ModalBody = styled.div`
-  flex: 1;
-`;
-
-const ModalFooter = styled.div`
-  display: flex;
-  height: 48px;
-  align-items: center;
-  justify-content: flex-end;
-  column-gap: 4px;
-
-  *:last-child {
-    margin-left: 8px;
-  }
-`;
+import { IoMdClose } from 'react-icons/io';
 
 interface ConditionCheckModalProps {
   visible: boolean;
@@ -74,7 +31,8 @@ const ConditionCheckModal = ({
   const [result, setResult] = useState<Result>();
 
   const handleFormChange =
-    (key: keyof IForm) => (e: ChangeEvent<HTMLInputElement>) => {
+    (key: keyof IForm) =>
+    (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
       setForm((prevForm) => ({
         ...prevForm,
         [key]: e.target.value,
@@ -109,57 +67,58 @@ const ConditionCheckModal = ({
 
   if (!visible) return null;
 
+  const resultColor =
+    result?.state === 'pass' ? 'text-blue-500' : 'text-red-500';
   return (
-    <Container data-testid="conditionCheckModal">
-      <ModalHeader>
-        <Typography variant="h6">Condition Checker</Typography>
-        <IconButton onClick={onClose} data-testid="conditionCheckModalCloseBtn">
-          <CloseIcon />
-        </IconButton>
-      </ModalHeader>
-      <ModalBody>
-        <TextField
+    <div
+      className="flex flex-col gap-4 fixed z-40 top-4 bottom-4 right-4 left-4 bg-neutral rounded-lg p-8 border border-color-white"
+      data-testid="conditionCheckModal"
+    >
+      <div>
+        <h1 className="text-xl uppercase">Condition Checker</h1>
+        <IoMdClose
+          className="absolute top-2 right-2 text-2xl text-white cursor-pointer hover:scale-110 transition-all"
+          role="button"
+          onClick={onClose}
+          data-testid="conditionCheckModalCloseBtn"
+        />
+      </div>
+      <div>
+        <input
+          type="text"
           data-testid="title"
-          fullWidth
-          label="Job Title"
-          variant="filled"
+          placeholder="Job Title"
+          className="input w-full my-2"
           onChange={handleFormChange('title')}
           value={form.title}
         />
-        <TextField
+        <textarea
+          className="textarea textarea-primary w-full"
+          placeholder="Job Description"
           data-testid="desc"
-          multiline
-          fullWidth
-          rows={13}
-          label="Job Description"
-          variant="filled"
+          rows={10}
           onChange={handleFormChange('description')}
           value={form.description}
-        />
-      </ModalBody>
-      <ModalFooter>
+        ></textarea>
+      </div>
+      <div className="flex gap-2 justify-end items-center">
         {result && (
           <>
-            <Typography variant="body2">RESULT:</Typography>
-            <Typography
-              variant="body2"
-              color={result.state === 'pass' ? 'primary.main' : 'error.main'}
-              sx={{ textTransform: 'uppercase' }}
-            >
+            <span className="text-sm">RESULT:</span>
+            <span className={`text-sm uppercase ${resultColor}`}>
               {`${result.state} (${result.count})`}
-            </Typography>
+            </span>
           </>
         )}
-        <Button
+        <button
+          className="btn btn-sm btn-success text-white"
           data-testid="checkBtn"
-          variant="contained"
-          size="small"
           onClick={check}
         >
           Check
-        </Button>
-      </ModalFooter>
-    </Container>
+        </button>
+      </div>
+    </div>
   );
 };
 

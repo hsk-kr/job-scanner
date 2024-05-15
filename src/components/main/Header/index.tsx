@@ -18,7 +18,7 @@ const Header = () => {
             </li>
           )}
           <li>
-            <details className="z-50">
+            <details className="z-30">
               <summary>Links</summary>
               <ul className="p-2 bg-base-100 rounded-t-none">
                 <b className="text-center block">v1.0.0</b>

@@ -11,12 +11,8 @@ const submit = () => {
 
 // It has a dependency with the submit func
 const submitWithDefaultJobPost = () => {
-  const title = screen
-    .getByTestId('title')
-    .querySelector<HTMLInputElement>('input');
-  const desc = screen
-    .getByTestId('desc')
-    .querySelector<HTMLTextAreaElement>('textarea');
+  const title = screen.getByTestId('title');
+  const desc = screen.getByTestId('desc');
 
   if (!title || !desc) {
     throw new Error('cannot find title or desc.');
@@ -105,7 +101,7 @@ describe('ConditionCheckModal', () => {
     screen.getByText(/fail \(2\)/i);
   });
 
-  test('should intialize the count number', () => {
+  test('should initialize the count number', () => {
     render(
       <ConditionCheckModal
         visible={true}
@@ -131,9 +127,7 @@ describe('ConditionCheckModal', () => {
     submitWithDefaultJobPost();
     screen.getByText(/fail \(1\)/i);
 
-    const title = screen
-      .getByTestId('title')
-      .querySelector<HTMLInputElement>('input');
+    const title = screen.getByTestId('title');
     if (!title) throw new Error('cannot find the title input');
 
     act(() => {
