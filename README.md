@@ -48,7 +48,7 @@ I will respond as soon as possible.
 
 ## How To Use
 
-Coming soon
+[![Watch the Video on YouTube](https://img.youtube.com/vi/UVOI1rlrAmw/default.jpg)](https://www.youtube.com/watch?v=UVOI1rlrAmw)
 
 ## How To Run (dev)
 
