@@ -20,7 +20,6 @@ export interface QuerySelectors {
   activeJobPostInJobPost: string;
   jobListContainer: string;
   page: string;
-  activePageInPage: string;
   clickItemInPage: string;
 }
 

@@ -18,8 +18,7 @@ export const querySelectors: QuerySelectors = {
   activeJobPostInJobPost:
     'div[class*="jobs-search-results-list__list-item--active"]',
   jobListContainer: '.jobs-search-results-list',
-  page: 'ul.jobs-search-pagination__pages > li',
-  activePageInPage: 'button.jobs-search-pagination__indicator-button--active',
+  page: '.jobs-search-results-list__pagination > ul > li',
   clickItemInPage: 'button',
 };
 
@@ -32,7 +31,6 @@ export const querySelectorDesciptions: QuerySelectorDescriptions = {
   activeJobPostInJobPost: `element shown it as selected job post in the job post element`,
   jobListContainer: 'element that includes job posts and is scrollable.',
   page: `page.`,
-  activePageInPage: 'element shown it as selected page in the page element.',
   clickItemInPage: `html element redirects when clicked.`,
 };
 
@@ -134,7 +132,11 @@ export const moveToNextJobList = async () => {
   if (pages.length === 0) return false;
 
   for (let i = 0; i < pages.length; i++) {
-    if (pages[i].querySelector(querySelectors['activePageInPage'])) {
+    const isActive =
+      pages[i].className.includes('active') ||
+      pages[i].querySelector('button')?.className.includes('active') === true;
+
+    if (isActive) {
       if (i === pages.length - 1) return false;
       (
         pages[i + 1]?.querySelector(

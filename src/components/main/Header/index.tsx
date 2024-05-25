@@ -15,7 +15,7 @@ const Header = () => {
     <div className="navbar bg-neutral">
       {settingModalVisible && <SettingModal onClose={toggleSettingModal} />}
       <div className="flex-1">
-        <a className="btn btn-ghost text-xl">Job Scanner 1.0.0</a>
+        <a className="btn btn-ghost text-xl">Job Scanner 1.0.1</a>
       </div>
       <div className="flex-none">
         <ul className="menu menu-horizontal px-1">
@@ -28,7 +28,7 @@ const Header = () => {
             <details className="z-30">
               <summary>Links</summary>
               <ul className="p-2 bg-base-100 rounded-t-none">
-                <b className="text-center block">v1.0.0</b>
+                <b className="text-center block">v1.0.1</b>
                 <li>
                   <a
                     href="https://github.com/hsk-kr/linkedin-job-scanner"
