@@ -1,11 +1,11 @@
 {
   "name": "Job Scanner",
   "description": "",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "manifest_version": 3,
   "action": {
     "default_popup": "index.html",
-    "default_title": "Open App"
+    "default_title": "Job Scanner"
   },
   "icons": {
     "16": "icon16.png",

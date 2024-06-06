@@ -37,6 +37,12 @@ pnpm run test
 ### Reflect on the html and the test files
 
 ```
+node linkedin-test-html-generator.mjs --update
+```
+
+or you can run this command under the root directory
+
+```
 pnpm run test:update
 ```
 

@@ -7,10 +7,10 @@ import {
 } from '@/types/storage';
 
 type ClickableHTMLElement = HTMLElement & { click: VoidFunction };
-
 export const querySelectors: QuerySelectors = {
   jobTitle: '.job-details-jobs-unified-top-card__job-title',
   jobDescription: '.jobs-description__container',
+  jobCompanyName: '.jobs-details__main-content [class*=company-name]',
   jobAdddtionalInfo:
     '.job-details-jobs-unified-top-card__primary-description-container',
   jobListPost: '.jobs-search-results-list > ul > li',
@@ -25,6 +25,7 @@ export const querySelectors: QuerySelectors = {
 export const querySelectorDesciptions: QuerySelectorDescriptions = {
   jobTitle: 'job title element.',
   jobDescription: 'job description.',
+  jobCompanyName: 'company name',
   jobAdddtionalInfo: 'element that includes company name.',
   jobListPost: 'job post in the job list.',
   clickItemInJobPost: 'element shows a job post when clicked.',
@@ -58,12 +59,14 @@ export const getElements = async <T extends HTMLElement>(
 export const getJobInfo = async (): Promise<JobInfo> => {
   const jobTitle = await getElement('jobTitle');
   const jobDescription = await getElement('jobDescription');
+  const jobCompanyName = await getElement('jobCompanyName');
   const jobAdddtionalInfo = await getElement('jobAdddtionalInfo');
+  const additionalInfo = `${jobCompanyName?.textContent?.trim() ?? ''} • ${jobAdddtionalInfo?.textContent?.trim() ?? ''}`;
 
   return {
     jobTitle: jobTitle?.textContent?.trim() ?? '',
     jobDescription: jobDescription?.textContent?.trim() ?? '',
-    jobAdditionalInfo: jobAdddtionalInfo?.textContent?.trim() ?? '',
+    jobAdditionalInfo: additionalInfo,
     url: window.location.href,
   };
 };

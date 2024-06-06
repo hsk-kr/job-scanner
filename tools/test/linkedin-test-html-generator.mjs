@@ -113,30 +113,6 @@ const input = (rl, question) => {
   });
 };
 
-/**
- * type keyword until the selector value equlas to the keyword
- * @param {Page} page
- * @param {string} selector
- * @param {string} keyword
- */
-const type = (page, selector, keyword) => {
-  return new Promise(async (resolve) => {
-    let value;
-
-    do {
-      const input = await page.waitForSelector(selector);
-      await input.evaluate((e) => {
-        e.focus();
-      });
-      await page.type(selector, keyword);
-
-      value = await input.evaluate((e) => e.value);
-    } while (value !== keyword);
-
-    resolve();
-  });
-};
-
 const browser = await puppeteer.launch({
   headless: false,
 });
@@ -205,12 +181,17 @@ const jobAdditionalInfo = await page.waitForSelector(
 const jobDescription = await page.waitForSelector(
   '.jobs-description-content__text'
 );
+const jobCompanyName = await page.waitForSelector(
+  '.jobs-details__main-content [class*=company-name]'
+);
+
+let additionalInfo = `${
+  (await jobCompanyName.evaluate((e) => e.textContent)).trim() ?? ''
+} • ${(await jobAdditionalInfo.evaluate((e) => e.textContent)).trim() ?? ''}`;
 
 const jobInfo = {
   jobTitle: (await jobTitle.evaluate((e) => e.textContent)).trim(),
-  jobAdditionalInfo: (
-    await jobAdditionalInfo.evaluate((e) => e.textContent)
-  ).trim(),
+  jobAdditionalInfo: additionalInfo,
   jobDescription: (await jobDescription.evaluate((e) => e.textContent)).trim(),
 };
 

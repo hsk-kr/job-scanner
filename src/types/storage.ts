@@ -14,6 +14,7 @@ export interface TaskFormDraft {
 export interface QuerySelectors {
   jobTitle: string;
   jobDescription: string;
+  jobCompanyName: string;
   jobAdddtionalInfo: string;
   jobListPost: string;
   clickItemInJobPost: string;
