@@ -145,6 +145,7 @@ const crawlJobPosts = async () => {
         checkJobConditions(
           jobPost.value.jobTitle,
           removeHTMLTags(jobPost.value.jobDescription),
+          jobPost.value.jobAdditionalInfo,
           jobPost.activeTask.jobConditions
         )
       ) {

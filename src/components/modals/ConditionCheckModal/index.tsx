@@ -12,6 +12,7 @@ interface ConditionCheckModalProps {
 interface IForm {
   title: string;
   description: string;
+  additionalInfo: string;
 }
 
 interface Result {
@@ -27,6 +28,7 @@ const ConditionCheckModal = ({
   const [form, setForm] = useState<IForm>({
     title: '',
     description: '',
+    additionalInfo: '',
   });
   const [result, setResult] = useState<Result>();
 
@@ -43,6 +45,7 @@ const ConditionCheckModal = ({
     const pass = checkJobConditions(
       form.title,
       form.description,
+      form.additionalInfo,
       jobConditions
     );
 
@@ -92,11 +95,19 @@ const ConditionCheckModal = ({
           onChange={handleFormChange('title')}
           value={form.title}
         />
+        <input
+          type="text"
+          data-testid="additional_info"
+          placeholder="Job Additional Info"
+          className="input w-full my-2"
+          onChange={handleFormChange('additionalInfo')}
+          value={form.additionalInfo}
+        />
         <textarea
           className="textarea textarea-primary w-full"
           placeholder="Job Description"
           data-testid="desc"
-          rows={11}
+          rows={9}
           onChange={handleFormChange('description')}
           value={form.description}
         ></textarea>

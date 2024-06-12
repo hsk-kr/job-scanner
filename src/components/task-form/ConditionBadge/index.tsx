@@ -26,10 +26,22 @@ const ConditionBadge = ({
     item: dragItem,
   }));
 
+  let targetText: string;
+  switch (target) {
+    case 'title':
+      targetText = 'Job Title';
+      break;
+    case 'description':
+      targetText = 'Job Description';
+      break;
+    case 'additional_info':
+      targetText = 'Job Additional Info';
+      break;
+  }
   let conditionText = '';
   conditionText += not ? 'not, ' : '';
   conditionText += caseInsensitive ? 'ci, ' : '';
-  conditionText += target === 'title' ? 'Job Title, ' : 'Job Description, ';
+  conditionText += `${targetText}, `;
   conditionText += `${operator}, `;
   conditionText += `${frequency}, `;
   conditionText += `"${text}"`;

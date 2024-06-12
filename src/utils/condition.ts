@@ -3,6 +3,7 @@ import { JobCondition } from '@/types/job';
 export const checkJobConditions = (
   title: string,
   description: string,
+  jobAdddtionalInfo: string,
   jobConditions: JobCondition[]
 ) => {
   // all conditions must be correct
@@ -24,6 +25,8 @@ export const checkJobConditions = (
         case 'description':
           targetContent = description;
           break;
+        case 'additional_info':
+          targetContent = jobAdddtionalInfo;
       }
 
       // skip there are no contents to compare

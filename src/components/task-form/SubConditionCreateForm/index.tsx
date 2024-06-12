@@ -56,6 +56,7 @@ const SubConditionCreateForm = () => {
         >
           <option value="title">Job Title</option>
           <option value="description">Job Description</option>
+          <option value="additional_info">Job Additional Info</option>
         </select>
         <select
           {...register('operator')}
