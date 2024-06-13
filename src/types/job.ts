@@ -21,7 +21,11 @@ export interface ActiveJobTask {
   foundJobs: JobInfo[];
 }
 
-export type ConditionTarget = 'title' | 'description' | 'additional_info';
+export type ConditionTarget =
+  | 'title'
+  | 'description'
+  | 'additional_info'
+  | 'applicants';
 
 export type ConditionOperator = '=' | '!=' | '<' | '>' | '<=' | '>=';
 

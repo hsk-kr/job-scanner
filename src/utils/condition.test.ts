@@ -39,6 +39,63 @@ describe('checkJobConditions', () => {
           subConditions: [
             {
               id: 'a',
+              target: 'applicants',
+              not: false,
+              caseInsensitive: true,
+              text: '',
+              frequency: 48,
+              operator: '=',
+            },
+          ],
+        },
+      ])
+    ).toBe(true);
+
+    expect(
+      checkJobConditions([
+        {
+          id: 'a',
+          subConditions: [
+            {
+              id: 'a',
+              target: 'applicants',
+              not: false,
+              caseInsensitive: true,
+              text: '',
+              frequency: 50,
+              operator: '<=',
+            },
+          ],
+        },
+      ])
+    ).toBe(true);
+
+    expect(
+      checkJobConditions([
+        {
+          id: 'a',
+          subConditions: [
+            {
+              id: 'a',
+              target: 'applicants',
+              not: false,
+              caseInsensitive: true,
+              text: '',
+              frequency: 45,
+              operator: '>=',
+            },
+          ],
+        },
+      ])
+    ).toBe(true);
+
+    expect(
+      checkJobConditions([
+        {
+          id: 'a',
+          subConditions: [
+            {
+              id: 'a',
               target: 'additional_info',
               not: false,
               caseInsensitive: true,

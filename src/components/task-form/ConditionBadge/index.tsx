@@ -37,6 +37,9 @@ const ConditionBadge = ({
     case 'additional_info':
       targetText = 'Job Additional Info';
       break;
+    case 'applicants':
+      targetText = 'applicants';
+      break;
   }
   let conditionText = '';
   conditionText += not ? 'not, ' : '';

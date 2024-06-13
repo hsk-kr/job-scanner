@@ -1,5 +1,26 @@
 import { JobCondition } from '@/types/job';
 
+const operator = (
+  operator: JobCondition['subConditions'][0]['operator'],
+  left: number,
+  right: number
+) => {
+  switch (operator) {
+    case '=':
+      return left === right;
+    case '!=':
+      return left !== right;
+    case '<':
+      return left < right;
+    case '>':
+      return left > right;
+    case '<=':
+      return left <= right;
+    case '>=':
+      return left >= right;
+  }
+};
+
 export const checkJobConditions = (
   title: string,
   description: string,
@@ -16,60 +37,67 @@ export const checkJobConditions = (
     for (const subCondition of jobCondition.subConditions) {
       let targetContent = '';
       let text = subCondition.text;
-
-      // target
-      switch (subCondition.target) {
-        case 'title':
-          targetContent = title;
-          break;
-        case 'description':
-          targetContent = description;
-          break;
-        case 'additional_info':
-          targetContent = jobAdddtionalInfo;
-      }
-
-      // skip there are no contents to compare
-      if (!text || !targetContent) continue;
-
-      // caseInsensitive
-      if (subCondition.caseInsensitive) {
-        targetContent = targetContent.toLocaleLowerCase();
-        text = text.toLocaleLowerCase();
-      }
-
-      // how many times the text shows up in the text
-      let frequency = -1;
-      let indexOf = -1;
-
-      do {
-        indexOf++;
-        indexOf = targetContent.indexOf(text, indexOf);
-        frequency++;
-      } while (indexOf !== -1);
-
       let subConditionPass = false;
 
-      // operator
-      switch (subCondition.operator) {
-        case '=':
-          subConditionPass = frequency === subCondition.frequency;
-          break;
-        case '!=':
-          subConditionPass = frequency !== subCondition.frequency;
-          break;
-        case '<':
-          subConditionPass = frequency < subCondition.frequency;
-          break;
-        case '>':
-          subConditionPass = frequency > subCondition.frequency;
-          break;
-        case '<=':
-          subConditionPass = frequency <= subCondition.frequency;
-          break;
-        case '>=':
-          subConditionPass = frequency >= subCondition.frequency;
-          break;
+      // applicants, this is exceptional since the logic is different from other targets
+      if (subCondition.target === 'applicants') {
+        const splitInfo = jobAdddtionalInfo.split(' ');
+        let numApplicants: number | undefined = undefined;
+
+        for (let i = 0; i < splitInfo.length; i++) {
+          if (i > 0 && splitInfo[i] === 'applicants') {
+            numApplicants = Number(splitInfo[i - 1]);
+            break;
+          }
+        }
+
+        if (numApplicants === undefined || Number.isNaN(numApplicants)) {
+          continue;
+        }
+
+        subConditionPass = operator(
+          subCondition.operator,
+          numApplicants,
+          subCondition.frequency
+        );
+      } else {
+        // target
+        switch (subCondition.target) {
+          case 'title':
+            targetContent = title;
+            break;
+          case 'description':
+            targetContent = description;
+            break;
+          case 'additional_info':
+            targetContent = jobAdddtionalInfo;
+        }
+
+        // skip there are no contents to compare
+        if (!text || !targetContent) continue;
+
+        // caseInsensitive
+        if (subCondition.caseInsensitive) {
+          targetContent = targetContent.toLocaleLowerCase();
+          text = text.toLocaleLowerCase();
+        }
+
+        // how many times the text shows up in the text
+        let frequency = -1;
+        let indexOf = -1;
+
+        do {
+          indexOf++;
+          indexOf = targetContent.indexOf(text, indexOf);
+          frequency++;
+        } while (indexOf !== -1);
+
+        // operator
+        subConditionPass = operator(
+          subCondition.operator,
+          frequency,
+          subCondition.frequency
+        );
       }
 
       // not

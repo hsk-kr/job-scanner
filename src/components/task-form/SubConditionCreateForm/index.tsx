@@ -6,16 +6,24 @@ const SubConditionCreateForm = () => {
   const {
     register,
     handleSubmit,
+    watch,
     formState: { errors },
   } = useForm<ITaskSubConditionForm>({
     defaultValues: {
       caseInsensitive: true,
       operator: '>=',
+      text: '',
     },
   });
+  const target = watch('target');
   const { appendSubCondition } = useTaskForm();
 
   const submit: SubmitHandler<ITaskSubConditionForm> = (data) => {
+    // applicants doesn't need to have text field, therefore it removes the text field
+    // when the target is applicatns, to reduce confusion.
+    if (data.target === 'applicants') {
+      data.text = '';
+    }
     appendSubCondition(data);
   };
 
@@ -57,6 +65,7 @@ const SubConditionCreateForm = () => {
           <option value="title">Job Title</option>
           <option value="description">Job Description</option>
           <option value="additional_info">Job Additional Info</option>
+          <option value="applicants">Applicants</option>
         </select>
         <select
           {...register('operator')}
@@ -86,15 +95,17 @@ const SubConditionCreateForm = () => {
           Create Condition
         </button>
       </div>
-      <input
-        {...register('text', {
-          required: 'Keyword is required.',
-          maxLength: 255,
-        })}
-        type="text"
-        className={`input input-bordered ${errors.text ? 'input-error' : ''}`}
-        placeholder="Keyword"
-      />
+      {target !== 'applicants' && (
+        <input
+          {...register('text', {
+            required: 'Keyword is required.',
+            maxLength: 255,
+          })}
+          type="text"
+          className={`input input-bordered ${errors.text ? 'input-error' : ''}`}
+          placeholder="Keyword"
+        />
+      )}
     </form>
   );
 };
