@@ -27,6 +27,11 @@ const SubConditionCreateForm = () => {
     appendSubCondition(data);
   };
 
+  // Frequency still remains with the name frequency but when the target is applicants,
+  // it checks the number of applicants is the same with the frequency,
+  // therefore, the name, frequency, may make a confusion so, it displays a different name depending on the type.
+  const frequencyLabel = target === 'applicants' ? 'Number' : 'Frequency';
+
   return (
     <form
       className="flex flex-col gap-2"
@@ -80,15 +85,15 @@ const SubConditionCreateForm = () => {
         </select>
         <input
           {...register('frequency', {
-            required: 'Frequency is required.',
+            required: `${frequencyLabel} is required.`,
             valueAsNumber: true,
             min: {
               value: 0,
-              message: 'Frequency must be a positive number.',
+              message: `${frequencyLabel}must be a positive number.`,
             },
           })}
           type="number"
-          placeholder="Frequency"
+          placeholder={frequencyLabel}
           className={`input input-bordered w-36 ${errors.frequency ? 'input-error' : ''}`}
         />
         <button type="submit" className="btn btn-neutral ml-2">
