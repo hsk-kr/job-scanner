@@ -15,7 +15,7 @@ const Header = () => {
     <div className="navbar bg-neutral">
       {settingModalVisible && <SettingModal onClose={toggleSettingModal} />}
       <div className="flex-1">
-        <a className="btn btn-ghost text-xl">Job Scanner 1.0.2</a>
+        <a className="btn btn-ghost text-xl">Job Scanner 1.0.3</a>
       </div>
       <div className="flex-none">
         <ul className="menu menu-horizontal px-1">
