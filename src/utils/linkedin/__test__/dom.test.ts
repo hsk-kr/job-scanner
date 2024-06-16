@@ -26,9 +26,9 @@ describe('JobList Page', () => {
       // Below comments UPDATE START ~ UPDATE END is used to update the test code by linkedin-test-html-generator script
       // linkedin-test-html-generator UPDATE START
       expect(jobInfo).toEqual({
-        jobTitle: expect.stringContaining('Web Developer'),
-        jobDescription: expect.stringContaining('by'),
-        jobAdditionalInfo: expect.stringContaining('icsintergratedllc'),
+        jobTitle: expect.stringContaining('PowerShell Developer'),
+        jobDescription: expect.stringContaining('troubleshooting'),
+        jobAdditionalInfo: expect.stringContaining('Elmax'),
         url: expect.stringContaining('http'),
       });
       // linkedin-test-html-generator UPDATE END
