@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import SettingModal from '@/components/modals/SettingModal';
 import { useState } from 'react';
 
+const VERSION = import.meta.env.VITE_VERSION;
+
 const Header = () => {
   const { activeTask } = useJobTasks();
   const canCreateTask = activeTask === undefined;
@@ -15,7 +17,7 @@ const Header = () => {
     <div className="navbar bg-neutral">
       {settingModalVisible && <SettingModal onClose={toggleSettingModal} />}
       <div className="flex-1">
-        <a className="btn btn-ghost text-xl">Job Scanner 1.0.3</a>
+        <a className="btn btn-ghost text-xl">Job Scanner {VERSION}</a>
       </div>
       <div className="flex-none">
         <ul className="menu menu-horizontal px-1">
@@ -28,7 +30,7 @@ const Header = () => {
             <details className="z-30">
               <summary>Links</summary>
               <ul className="p-2 bg-base-100 rounded-t-none">
-                <b className="text-center block">v1.0.2</b>
+                <b className="text-center block">v{VERSION}</b>
                 <li>
                   <a
                     href="https://github.com/hsk-kr/linkedin-job-scanner"

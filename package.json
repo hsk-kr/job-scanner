@@ -8,7 +8,13 @@
     "test:update": "node tools/test/linkedin-test-html-generator.mjs --update",
     "build": "tsc && vite build && vite build -c vite-script.config.ts && browserify ./dist/assets/content.js -o ./dist/assets/content.js",
     "preview": "vite preview",
-    "prepare": "husky"
+    "prepare": "husky",
+    "version:major:up": "node tools/version/version-manage.mjs major up",
+    "version:major:down": "node tools/version/version-manage.mjs major down",
+    "version:minor:up": "node tools/version/version-manage.mjs minor up",
+    "version:minor:down": "node tools/version/version-manage.mjs minor down",
+    "version:patch:up": "node tools/version/version-manage.mjs patch up",
+    "version:patch:down": "node tools/version/version-manage.mjs patch down"
   },
   "dependencies": {
     "@fontsource/roboto": "^5.0.13",
