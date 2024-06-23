@@ -9,7 +9,7 @@ const currentDirname = import.meta.url.substring(
   import.meta.url.lastIndexOf('/')
 );
 const packageFilePath = path.join(currentDirname, '..', '..', 'package.json');
-const envFilePath = path.join(currentDirname, '..', '..', 'src', '.env');
+const envFilePath = path.join(currentDirname, '..', '..', '.env');
 const manifestFilePath = path.join(
   currentDirname,
   '..',
