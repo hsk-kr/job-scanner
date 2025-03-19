@@ -9,16 +9,16 @@ import {
 type ClickableHTMLElement = HTMLElement & { click: VoidFunction };
 export const querySelectors: QuerySelectors = {
   jobTitle: '.job-details-jobs-unified-top-card__job-title',
-  jobDescription: '.jobs-description__container',
-  jobCompanyName: '.jobs-details__main-content [class*=company-name]',
+  jobDescription: '.jobs-box__html-content',
+  jobCompanyName: '.job-details-jobs-unified-top-card__company-name',
   jobAdddtionalInfo:
     '.job-details-jobs-unified-top-card__primary-description-container',
-  jobListPost: '.jobs-search-results-list > ul > li',
+  jobListPost: '.scaffold-layout__list div[data-view-name="job-card"]',
   clickItemInJobPost: 'div > div',
   activeJobPostInJobPost:
     'div[class*="jobs-search-results-list__list-item--active"]',
-  jobListContainer: '.jobs-search-results-list',
-  page: '.jobs-search-results-list__pagination > ul > li',
+  jobListContainer: '.scaffold-layout__list > div',
+  page: '.jobs-search-pagination__pages .jobs-search-pagination__indicator',
   clickItemInPage: 'button',
 };
 
@@ -154,10 +154,7 @@ export const moveToNextJobList = async () => {
 };
 
 export const isLoading = () => {
-  const loading =
-    document.querySelector('#main *[class*=--loading]') ??
-    document.querySelector('.jobs-ghost-fadein-placeholder') ??
-    document.querySelector('*[class*=ghost-placeholder]');
+  const loading = document.querySelector('#main *[class*=--loading]');
 
   return loading !== null ? true : false;
 };

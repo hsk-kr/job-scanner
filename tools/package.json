@@ -2,5 +2,11 @@
   "name": "tools",
   "description": "utils to help the development and test.",
   "type": "module",
-  "scripts": {}
+  "scripts": {
+    "generate:html": "node test/linkedin-test-html-generator.mjs",
+    "setup:puppeteer": "npx puppeteer browsers install chrome"
+  },
+  "dependencies": {
+    "puppeteer": "^24.4.0"
+  }
 }

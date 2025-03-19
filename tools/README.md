@@ -11,8 +11,10 @@ The process entailed updating the joblist.html file, utilized for testing the fu
 1\. Execute the script.
 
 ```
-node linkedin-test-html-generator.mjs
+pnpm run generate:html
 ```
+
+If there is a chrome error, try `pnpm run setup:puppeteer`.
 
 2\. Sign in Linkedin on the chrome test browser
 

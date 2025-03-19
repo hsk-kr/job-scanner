@@ -1,7 +1,7 @@
 {
   "name": "Job Scanner",
-  "description": "",
-  "version": "1.0.3",
+  "description": "Search job opportunities efficiently.",
+  "version": "1.0.4",
   "manifest_version": 3,
   "action": {
     "default_popup": "index.html",
@@ -13,11 +13,18 @@
     "48": "icon48.png",
     "128": "icon128.png"
   },
-  "permissions": ["storage", "unlimitedStorage"],
+  "permissions": [
+    "storage",
+    "unlimitedStorage"
+  ],
   "content_scripts": [
     {
-      "matches": ["https://www.linkedin.com/*"],
-      "js": ["./assets/content.js"]
+      "matches": [
+        "https://www.linkedin.com/*"
+      ],
+      "js": [
+        "./assets/content.js"
+      ]
     }
   ]
 }

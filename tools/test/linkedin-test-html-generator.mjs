@@ -13,6 +13,10 @@ const rl = readline.createInterface({
 });
 const updateOption = process.argv.findIndex((v) => v === '--update') !== -1;
 
+const delay = (ms) => {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+};
+
 /**
  * Save the file with the content under the html directory.
  * @param {string} filename
@@ -135,19 +139,12 @@ do {
 await page.goto(JOB_LIST_PAGE);
 
 // scroll to the bottom
-const jobList = await page.waitForSelector('.jobs-search-results-list');
+const jobList = await page.waitForSelector('.scaffold-layout__list > div');
 await jobList.evaluate(async (e) => {
   const scrollToBottom = async () => {
     const waitUntilLoadingFininish = async () => {
-      const delay = (ms) => {
-        return new Promise((resolve) => setTimeout(resolve, ms));
-      };
-
       const isLoading = () => {
-        const loading =
-          document.querySelector('#main *[class*=--loading]') ??
-          document.querySelector('.jobs-ghost-fadein-placeholder') ??
-          document.querySelector('*[class*=ghost-placeholder]');
+        const loading = document.querySelector('li[class*=ghost-placeholder]');
 
         return loading !== null ? true : false;
       };
@@ -178,11 +175,9 @@ const jobTitle = await page.waitForSelector(
 const jobAdditionalInfo = await page.waitForSelector(
   '.job-details-jobs-unified-top-card__primary-description-container'
 );
-const jobDescription = await page.waitForSelector(
-  '.jobs-description-content__text'
-);
+const jobDescription = await page.waitForSelector('.jobs-box__html-content');
 const jobCompanyName = await page.waitForSelector(
-  '.jobs-details__main-content [class*=company-name]'
+  '.job-details-jobs-unified-top-card__company-name'
 );
 
 let additionalInfo = `${
