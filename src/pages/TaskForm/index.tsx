@@ -1,14 +1,12 @@
 import TaskForm from '@/components/task-form/TaskForm';
-// import { DndProvider } from 'react-dnd';
-// import { HTML5Backend } from 'react-dnd-html5-backend';
+import { DragNDropProvider } from '@/lib/dnd/context';
 
 const TaskFormPage = () => {
-  return <TaskForm />;
-  // return (
-  //   <DndProvider backend={HTML5Backend}>
-  //     <TaskForm />
-  //   </DndProvider>
-  // );
+  return (
+    <DragNDropProvider>
+      <TaskForm />
+    </DragNDropProvider>
+  );
 };
 
 export default TaskFormPage;
