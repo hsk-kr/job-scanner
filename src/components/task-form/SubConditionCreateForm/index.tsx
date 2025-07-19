@@ -1,3 +1,6 @@
+import Button from '@/components/ui/Button';
+import Checkbox from '@/components/ui/Checkbox';
+import Select from '@/components/ui/Select';
 import { useTaskForm } from '@/stores/taskform';
 import { ITaskSubConditionForm } from '@/types/taskform';
 import { SubmitHandler, useForm } from 'react-hook-form';
@@ -42,28 +45,20 @@ const SubConditionCreateForm = () => {
     >
       <div className="flex gap-4">
         <div className="form-control">
-          <label className="cursor-pointer label">
-            <span className="label-text mr-2">Not</span>
-            <input
-              {...register('not')}
-              type="checkbox"
-              className="checkbox checkbox-info"
-            />
+          <label className="flex gap-2 items-center">
+            <span className="label text-sm">Not</span>
+            <Checkbox {...register('not')} />
           </label>
         </div>
         <div className="form-control">
-          <label className="cursor-pointer label">
-            <span className="label-text mr-2">Case Insensitive</span>
-            <input
-              {...register('caseInsensitive')}
-              type="checkbox"
-              className="checkbox checkbox-info"
-            />
+          <label className="flex gap-2 items-center">
+            <span className="label text-sm">Case Insensitive</span>
+            <Checkbox {...register('caseInsensitive')} />
           </label>
         </div>
       </div>
       <div className="flex gap-2 items-center">
-        <select
+        <Select
           {...register('target')}
           className="select select-bordered max-w-xs"
         >
@@ -71,18 +66,15 @@ const SubConditionCreateForm = () => {
           <option value="description">Job Description</option>
           <option value="additional_info">Job Additional Info</option>
           <option value="applicants">Applicants</option>
-        </select>
-        <select
-          {...register('operator')}
-          className="select select-bordered max-w-xs"
-        >
+        </Select>
+        <Select {...register('operator')}>
           <option value="=">=</option>
           <option value="!=">!=</option>
           <option value="<">{'<'}</option>
           <option value="<=">{'<='}</option>
           <option value=">">{'>'}</option>
           <option value=">=">{'>='}</option>
-        </select>
+        </Select>
         <input
           {...register('frequency', {
             required: `${frequencyLabel} is required.`,
@@ -96,9 +88,9 @@ const SubConditionCreateForm = () => {
           placeholder={frequencyLabel}
           className={`input input-bordered w-36 ${errors.frequency ? 'input-error' : ''}`}
         />
-        <button type="submit" className="btn btn-neutral ml-2">
-          Create Condition
-        </button>
+        <Button type="submit" color="primary" className="ml-2">
+          Add Condition
+        </Button>
       </div>
       {target !== 'applicants' && (
         <input

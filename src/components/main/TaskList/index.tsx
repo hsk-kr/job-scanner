@@ -3,10 +3,21 @@ import TaskListItem from '../TaskListItem';
 import { deleteAllTasks } from '@/utils/storage';
 import { useEffect, useState } from 'react';
 import TaskListSkeleton from '../TaskListSkeleton';
+import Button from '@/components/ui/Button';
 
 const TaskList = () => {
   const [loading, setLoading] = useState(true);
   const { jobTasks, activeTask } = useJobTasks();
+
+  const handleDeleteAllTasks = () => {
+    if (
+      window.confirm(
+        "Do you really want to delete all tasks? Once deleted, they can't be restored."
+      )
+    ) {
+      deleteAllTasks();
+    }
+  };
 
   useEffect(() => {
     setLoading(false);
@@ -14,22 +25,15 @@ const TaskList = () => {
 
   return (
     <div className="p-4">
-      <div className="flex justify-end">
-        <button
-          className="btn btn-sm btn-error text-neutral-100"
-          onClick={() => {
-            if (
-              window.confirm(
-                "Do you reallt want to delete ALL the tasks?\nOnce you delete all, you can't restore them."
-              )
-            ) {
-              deleteAllTasks();
-            }
-          }}
+      <div className="flex justify-end mb-4">
+        <Button
+          color="error"
+          className="text-inherit"
+          onClick={handleDeleteAllTasks}
           disabled={activeTask !== undefined}
         >
           Delete All Tasks
-        </button>
+        </Button>
       </div>
       {loading ? (
         <TaskListSkeleton />

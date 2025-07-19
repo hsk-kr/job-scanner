@@ -14,10 +14,10 @@ const Header = () => {
     setSettingModalVisible((prevVisible) => !prevVisible);
 
   return (
-    <div className="navbar bg-neutral">
+    <div className="navbar bg-base-300 px-4">
       {settingModalVisible && <SettingModal onClose={toggleSettingModal} />}
       <div className="flex-1">
-        <a className="btn btn-ghost text-xl">Job Scanner {VERSION}</a>
+        <h1 className="text-lg font-bold">Job Scanner {VERSION}</h1>
       </div>
       <div className="flex-none">
         <ul className="menu menu-horizontal px-1">
@@ -35,6 +35,7 @@ const Header = () => {
                   <a
                     href="https://github.com/hsk-kr/linkedin-job-scanner"
                     target="_blank"
+                    rel="noreferrer"
                   >
                     Website
                   </a>
@@ -43,6 +44,7 @@ const Header = () => {
                   <a
                     href="https://hsk-kr.github.io/job-scanner-json-webviewer/"
                     target="_blank"
+                    rel="noreferrer"
                   >
                     Viewer
                   </a>

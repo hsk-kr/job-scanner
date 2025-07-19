@@ -52,7 +52,7 @@ const ConditionContainer = ({
 
   return (
     <Drop name="condition" onDrop={handleDrop}>
-      <div className="relative p-4 h-28 card bg-base-300 rounded-box mt-4 flex gap-2 overflow-y-auto flex-row flex-wrap content-start">
+      <div className="relative p-4 h-28 card bg-base-300 rounded-box mt-4 flex gap-2 overflow-y-auto flex-row flex-wrap content-start items-center">
         {subConditions?.map((subCondition, subConditionIdx) => (
           <Fragment key={subCondition.id}>
             <ConditionBadge
@@ -63,7 +63,7 @@ const ConditionContainer = ({
               {...subCondition}
             />
             {subConditionIdx < subConditions.length - 1 && (
-              <div className="text-white text-sm">OR</div>
+              <div className="text-white text-xs">OR</div>
             )}
           </Fragment>
         ))}
@@ -72,7 +72,7 @@ const ConditionContainer = ({
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
             viewBox="0 0 24 24"
-            className="absolute top-1 right-1 inline-block w-4 h-4 stroke-current cursor-pointer hover:scale-125 transition-all"
+            className="absolute top-2 right-2 inline-block w-4 h-4 stroke-current cursor-pointer scale-[1.3] hover:scale-[1.6] transition-all"
             onClick={() => deleteCondition(conditionId)}
           >
             <path

@@ -10,6 +10,7 @@ import ConditionCheckModal from '@/components/modals/ConditionCheckModal';
 import { clearDraftTaskFormData } from '@/utils/storage';
 import { useJobTasks } from '@/stores/job-task';
 import Loading from '@/components/Loading';
+import Button from '@/components/ui/Button';
 
 const TaskForm = () => {
   const { form, isEdit, taskId, conditions, appendCondition } = useTaskForm();
@@ -63,24 +64,17 @@ const TaskForm = () => {
           handleSubmit(submit)();
         }}
       >
-        <div className="navbar bg-neutral">
+        <div className="navbar bg-base-300">
           <div className="gap-2 navbar-start">
-            <button
-              type="button"
-              className="btn-sm btn-ghost text-xl flex justify-center items-center rounded"
-              onClick={back}
-            >
+            <Button color="ghost" className="text-xl" onClick={back}>
               <IoIosArrowBack />
-            </button>
-            <a className="btn btn-ghost text-lg">Task Form</a>
+            </Button>
+            <h1 className="text-lg font-bold">Task Form</h1>
           </div>
           <div className="navbar-end">
-            <button
-              className={`btn btn-sm ${isEdit ? 'btn-warning' : ''}`}
-              disabled={loading}
-            >
+            <Button color={isEdit ? 'secondary' : 'primary'} disabled={loading}>
               {isEdit ? 'Update' : 'Create'}
-            </button>
+            </Button>
           </div>
         </div>
         <div className="p-4">
@@ -131,18 +125,17 @@ const TaskForm = () => {
         <SubConditionCreateForm />
         <ConditionContainer status="unused" canDelete={false} />
         <div className="chat chat-start mt-2">
-          <div className="chat-bubble">
-            Drag the conditions to the bottom section to apply
+          <div className="chat-bubble chat-bubble-primary text-sm">
+            Drag conditions to the bottom section to apply.
           </div>
         </div>
         <div className="chat chat-end mt-2">
-          <div className="chat-bubble">
-            <span
-              className="text-blue-300 cursor-pointer"
-              onClick={toggleModalOpen}
-            >
-              Click here to test if your conditions meet your expectations.
-            </span>
+          <div
+            className="chat-bubble chat-bubble-info text-sm cursor-pointer text-white hover:text-black transition-all"
+            onClick={toggleModalOpen}
+            role="button"
+          >
+            Click here to test if the conditions work as expected.
           </div>
         </div>
         <div className="divider"></div>
@@ -154,13 +147,11 @@ const TaskForm = () => {
               conditionId={condition.id}
               canDelete={conditions.length > 1}
             />
-            <div className="divider">AND</div>
+            <div className="divider text-sm">AND</div>
           </Fragment>
         ))}
         <div className="flex justify-center">
-          <button className="btn btn-outline" onClick={appendCondition}>
-            Add Condition Box
-          </button>
+          <Button onClick={appendCondition}>Add Condition Box</Button>
         </div>
       </div>
       <ConditionCheckModal

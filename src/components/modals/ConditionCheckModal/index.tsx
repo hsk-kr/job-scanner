@@ -74,11 +74,11 @@ const ConditionCheckModal = ({
     result?.state === 'pass' ? 'text-blue-500' : 'text-red-500';
   return (
     <div
-      className="flex flex-col gap-4 fixed z-40 top-4 bottom-4 right-4 left-4 bg-neutral rounded-lg p-8 border border-color-white"
+      className="flex flex-col gap-4 fixed z-40 top-4 bottom-4 right-4 left-4 bg-base-300 rounded-lg p-8 border border-color-white"
       data-testid="conditionCheckModal"
     >
       <div>
-        <h1 className="text-xl uppercase">Condition Checker</h1>
+        <h1 className="text-xl">Condition Checker</h1>
         <IoMdClose
           className="absolute top-2 right-2 text-2xl text-white cursor-pointer hover:scale-110 transition-all"
           role="button"
