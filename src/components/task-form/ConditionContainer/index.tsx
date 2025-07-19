@@ -1,4 +1,4 @@
-import { useDrop } from 'react-dnd';
+// import { useDrop } from 'react-dnd';
 import { Fragment, useMemo } from 'react';
 import ConditionBadge from '../ConditionBadge';
 import { useTaskForm } from '@/stores/taskform';
@@ -18,27 +18,27 @@ const ConditionContainer = ({
   const {
     unusedSubConditions,
     conditions,
-    moveSubCondition,
+    // moveSubCondition,
     deleteCondition,
     deleteSubCondition,
   } = useTaskForm();
-  const [, drop] = useDrop<DragItem>(
-    () => ({
-      accept: 'condition',
-      drop: (item) => {
-        const from =
-          item.status === 'unused'
-            ? { subConditionId: item.subConditionId }
-            : {
-                conditionId: item.conditionId || '',
-                subConditionId: item.subConditionId,
-              };
-        const to = { conditionId };
-        moveSubCondition(from, to);
-      },
-    }),
-    [moveSubCondition]
-  );
+  // const [, drop] = useDrop<DragItem>(
+  //   () => ({
+  //     accept: 'condition',
+  //     drop: (item) => {
+  //       const from =
+  //         item.status === 'unused'
+  //           ? { subConditionId: item.subConditionId }
+  //           : {
+  //               conditionId: item.conditionId || '',
+  //               subConditionId: item.subConditionId,
+  //             };
+  //       const to = { conditionId };
+  //       moveSubCondition(from, to);
+  //     },
+  //   }),
+  //   [moveSubCondition]
+  // );
   const subConditions = useMemo(() => {
     if (status === 'unused') return unusedSubConditions;
     return conditions.find((c) => c.id === conditionId)?.subConditions;
@@ -54,7 +54,7 @@ const ConditionContainer = ({
   return (
     <div
       className="relative p-4 h-28 card bg-base-300 rounded-box mt-4 flex gap-2 overflow-y-auto flex-row flex-wrap content-start"
-      ref={drop}
+      // ref={drop}
     >
       {subConditions?.map((subCondition, subConditionIdx) => (
         <Fragment key={subCondition.id}>

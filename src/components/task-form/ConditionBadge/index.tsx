@@ -1,7 +1,7 @@
 import { JobCondition } from '@/types/job';
 import { DragItem } from '@/types/taskform';
-import { HTMLAttributes } from 'react';
-import { useDrag } from 'react-dnd';
+// import { HTMLAttributes } from 'react';
+// import { useDrag } from 'react-dnd';
 
 type ConditionBadgeProps = JobCondition['subConditions'][0] &
   DragItem & { onDelete?: VoidFunction };
@@ -17,15 +17,15 @@ const ConditionBadge = ({
   onDelete,
   ...dragItem
 }: ConditionBadgeProps) => {
-  const [collected, drag] = useDrag<
-    DragItem,
-    DragItem,
-    HTMLAttributes<HTMLDivElement>
-  >(() => ({
-    type: 'condition',
-    item: dragItem,
-  }));
-
+  // const [collected, drag] = useDrag<
+  //   DragItem,
+  //   DragItem,
+  //   HTMLAttributes<HTMLDivElement>
+  // >(() => ({
+  //   type: 'condition',
+  //   item: dragItem,
+  // }));
+  //
   let targetText: string;
   switch (target) {
     case 'title':
@@ -55,8 +55,8 @@ const ConditionBadge = ({
     <div
       data-id={id}
       className={`badge ${buttonColor} gap-2 text-nowrap`}
-      ref={drag}
-      {...collected}
+      // ref={drag}
+      // {...collected}
     >
       {conditionText}
       <svg
