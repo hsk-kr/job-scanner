@@ -1,123 +1,159 @@
 import { JobInfo } from '@/types/job';
-import { getCustomQuerySelectors } from '../storage';
-import {
-  QuerySelectorDescriptions,
-  QuerySelectors,
-  QuerySelectorsKey,
-} from '@/types/storage';
 
-type ClickableHTMLElement = HTMLElement & { click: VoidFunction };
-export const querySelectors: QuerySelectors = {
-  jobTitle: '.job-details-jobs-unified-top-card__job-title',
-  jobDescription: '.jobs-box__html-content',
-  jobCompanyName: '.job-details-jobs-unified-top-card__company-name',
-  jobAdddtionalInfo:
-    '.job-details-jobs-unified-top-card__primary-description-container',
-  jobListPost: '.scaffold-layout__list div[data-view-name="job-card"]',
-  clickItemInJobPost: 'div > div',
-  activeJobPostInJobPost:
-    'div[class*="jobs-search-results-list__list-item--active"]',
-  jobListContainer: '.scaffold-layout__list > div',
-  page: '.jobs-search-pagination__pages .jobs-search-pagination__indicator',
-  clickItemInPage: 'button',
-};
-
-export const querySelectorDesciptions: QuerySelectorDescriptions = {
-  jobTitle: 'job title element.',
-  jobDescription: 'job description.',
-  jobCompanyName: 'company name',
-  jobAdddtionalInfo: 'element that includes company name.',
-  jobListPost: 'job post in the job list.',
-  clickItemInJobPost: 'element shows a job post when clicked.',
-  activeJobPostInJobPost: `element shown it as selected job post in the job post element`,
-  jobListContainer: 'element that includes job posts and is scrollable.',
-  page: `page.`,
-  clickItemInPage: `html element redirects when clicked.`,
-};
-
-export const getQuerySelectors = async () => {
-  const customQuerySelectors = await getCustomQuerySelectors();
-
-  return {
-    ...querySelectors,
-    ...customQuerySelectors,
-  };
-};
-
-export const getElement = async <T extends HTMLElement>(
-  key: QuerySelectorsKey
-) => {
-  return document.querySelector<T>((await getQuerySelectors())[key]);
-};
-
-export const getElements = async <T extends HTMLElement>(
-  key: QuerySelectorsKey
-) => {
-  return document.querySelectorAll<T>((await getQuerySelectors())[key]);
-};
-
-export const getJobInfo = async (): Promise<JobInfo> => {
-  const jobTitle = await getElement('jobTitle');
-  const jobDescription = await getElement('jobDescription');
-  const jobCompanyName = await getElement('jobCompanyName');
-  const jobAdddtionalInfo = await getElement('jobAdddtionalInfo');
-  const additionalInfo = `${jobCompanyName?.textContent?.trim() ?? ''} • ${jobAdddtionalInfo?.textContent?.trim() ?? ''}`;
-
-  return {
-    jobTitle: jobTitle?.textContent?.trim() ?? '',
-    jobDescription: jobDescription?.textContent?.trim() ?? '',
-    jobAdditionalInfo: additionalInfo,
+export const getJobInfo = (body: HTMLElement): JobInfo | null => {
+  const jobInfo: JobInfo = {
+    jobTitle: '-',
+    jobAdditionalInfo: '-',
+    jobDescription: '-',
     url: window.location.href,
   };
-};
+  const jobsDetails = body.querySelector<HTMLElement>('.jobs-details');
+  if (!jobsDetails) return null;
 
-export const getJobList = async (): Promise<
-  [NodeListOf<HTMLElement>, (index: number) => Promise<boolean>]
-> => {
-  const jobList = await getElements('jobListPost');
+  const links = jobsDetails.querySelectorAll('a');
+  let topCardContainer: HTMLElement | null = null;
 
-  const clickJob = async (index: number) => {
-    const jobList = await getElements('jobListPost');
-    const clickableItem = jobList[index].querySelector(
-      (await getQuerySelectors())['clickItemInJobPost']
-    );
-    if (!clickableItem) return false;
-    (clickableItem as ClickableHTMLElement)?.click();
-    return true;
+  for (const link of links) {
+    const href = link.href ?? '';
+
+    if (!/\/jobs\/view\/.*\/\?.*/.test(href)) continue;
+
+    jobInfo.jobTitle = link.textContent?.trim() ?? jobInfo.jobTitle;
+    topCardContainer = getClosestParentFromChild(link, 'div', {
+      verify: (element) =>
+        element.className.includes('job-details') &&
+        element.className.includes('__container'),
+    });
+    break;
+  }
+  if (!topCardContainer) return null;
+
+  jobInfo.jobDescription =
+    jobsDetails
+      .querySelector<HTMLElement>('#job-details')
+      ?.textContent?.trim() ?? '';
+  if (jobInfo.jobDescription === '') return null;
+
+  const divs = topCardContainer.querySelectorAll<HTMLDivElement>('div');
+  const info: { companyName: string; extraInfo: string } = {
+    companyName: '',
+    extraInfo: '',
   };
+  for (const div of divs) {
+    const className = div.className;
+    const isCompanyName =
+      className.includes('company-name') && className.includes('job-details');
+    const isExtraInfo =
+      className.includes('primary-description-container') &&
+      className.includes('job-details');
 
-  return [jobList, clickJob];
+    if (isCompanyName)
+      info.companyName = div.textContent?.trim() ?? info.companyName;
+    if (isExtraInfo) info.extraInfo = div.textContent?.trim() ?? info.extraInfo;
+  }
+
+  if (info.companyName === '' || info.extraInfo === '') return null;
+
+  jobInfo.jobAdditionalInfo = `${info.companyName} • ${info.extraInfo}`;
+
+  return jobInfo;
 };
 
-export const scrollToTheJobPost = async (target?: HTMLElement) => {
-  const jobListContainer = await getElement('jobListContainer');
+export const getClosestParentFromChild = <T extends HTMLElement>(
+  element: HTMLElement,
+  parentTagName: string,
+  options?: {
+    verify?: (element: HTMLElement) => boolean;
+  }
+): T | null => {
+  let current = element;
 
-  if (jobListContainer)
-    jobListContainer.scrollTop =
-      target !== undefined
-        ? jobListContainer.getBoundingClientRect().top +
-            target.getBoundingClientRect().top || 0
-        : jobListContainer.scrollHeight;
+  while (current?.parentElement) {
+    if (
+      current.parentElement.tagName.toUpperCase() ===
+      parentTagName.toUpperCase()
+    ) {
+      if (options?.verify && options.verify(current.parentElement) === false) {
+        current = current.parentElement;
+        continue;
+      }
+      return current.parentElement as T;
+    }
+
+    current = current.parentElement;
+  }
+
+  return null;
 };
 
-export const scrollToTheBottom = async (delay = 250) => {
+export const getJobListItems = (body: HTMLElement): HTMLLIElement[] => {
+  const links = body.querySelectorAll<HTMLAnchorElement>('a');
+  const jobListItems: HTMLLIElement[] = [];
+
+  for (const link of links) {
+    const href = link.href ?? '';
+
+    if (/\/jobs\/view\/.*\/\?.*/.test(href)) {
+      const li = getClosestParentFromChild<HTMLLIElement>(link, 'li');
+      if (li) jobListItems.push(li);
+    }
+  }
+
+  return jobListItems;
+};
+
+export const clickJobListItem = (jobListItem: HTMLLIElement): boolean => {
+  const links = jobListItem.querySelectorAll<HTMLAnchorElement>('a');
+
+  for (const link of links) {
+    const href = link.href ?? '';
+
+    if (!/\/jobs\/view\/.*\/\?.*/.test(href)) continue;
+
+    link.click();
+    return true;
+  }
+
+  return false;
+};
+
+export const getJobListContainer = (body: HTMLElement): HTMLElement | null => {
+  const links = body.querySelectorAll<HTMLAnchorElement>('a');
+  let jobLink: HTMLElement | null = null;
+
+  for (const link of links) {
+    const href = link.href ?? '';
+
+    if (/\/jobs\/view\/.*\/\?.*/.test(href)) {
+      jobLink = link;
+      break;
+    }
+  }
+
+  if (!jobLink) return null;
+
+  let current = getClosestParentFromChild<HTMLUListElement>(jobLink, 'ul');
+  let distance = 3;
+
+  while (current && distance >= 1) {
+    current = getClosestParentFromChild(current, 'div');
+    if (current && current.scrollHeight > 0) return current;
+    distance--;
+  }
+
+  return null;
+};
+
+export const scrollToTheBottom = async (element: HTMLElement, delay = 250) => {
   return new Promise<void>((resolve) => {
     let prevScrollTop = 0;
     let tm: NodeJS.Timeout | undefined = undefined;
 
-    const scroll = async () => {
-      const jobListContainer = await getElement('jobListContainer');
+    const scroll = () => {
+      prevScrollTop = element.scrollTop;
+      element.scrollTop += 200;
 
-      if (!jobListContainer) {
-        clearInterval(tm);
-        resolve();
-        return;
-      }
-
-      prevScrollTop = jobListContainer.scrollTop;
-      jobListContainer.scrollTop += 200;
-
-      if (jobListContainer.scrollTop === prevScrollTop) {
+      if (element.scrollTop === prevScrollTop) {
         resolve();
         clearInterval(tm);
         return;
@@ -128,35 +164,32 @@ export const scrollToTheBottom = async (delay = 250) => {
   });
 };
 
-export const moveToNextJobList = async () => {
-  const querySelectors = await getQuerySelectors();
-  const pages = await getElements('page');
+export const moveToNextJobPage = (body: HTMLElement): boolean => {
+  const pageUl = body.querySelector<HTMLUListElement>(
+    '#jobs-search-results-footer ul'
+  );
+  if (!pageUl) return false;
 
-  if (pages.length === 0) return false;
+  const pageButtons = pageUl.querySelectorAll<HTMLButtonElement>('li button');
 
-  for (let i = 0; i < pages.length; i++) {
-    const isActive =
-      pages[i].className.includes('active') ||
-      pages[i].querySelector('button')?.className.includes('active') === true;
-
-    if (isActive) {
-      if (i === pages.length - 1) return false;
-      (
-        pages[i + 1]?.querySelector(
-          querySelectors['clickItemInPage']
-        ) as ClickableHTMLElement
-      )?.click();
-      break;
+  for (const [i, pageButton] of pageButtons.entries()) {
+    if (pageButton.className.includes('active')) {
+      if (i >= pageButtons.length - 1) return false;
+      pageButtons[i + 1].click();
+      return true;
     }
   }
 
-  return true;
+  return false;
 };
 
-export const isLoading = () => {
-  const loading = document.querySelector('#main *[class*=--loading]');
-
-  return loading !== null ? true : false;
+export const scrollToTheJobListItem = (
+  jobListContainer: HTMLElement,
+  jobListItem: HTMLElement
+) => {
+  jobListContainer.scrollTop =
+    jobListContainer.getBoundingClientRect().top +
+    jobListItem.getBoundingClientRect().top;
 };
 
 export const removeHTMLTags = (html: string): string => {

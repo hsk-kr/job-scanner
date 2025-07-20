@@ -1,7 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import { JobInfo, JobTask, JobTaskStatus } from '@/types/job';
-import { QuerySelectors, TaskFormDraft } from '@/types/storage';
-import { querySelectors } from './linkedin/dom';
+import { TaskFormDraft } from '@/types/storage';
 
 // lcoal
 // in the local storage, except those fields are tasks.
@@ -229,38 +228,4 @@ export const getActiveTask = async (): Promise<JobTask | null> => {
 export const getTask = async (taskId: string): Promise<JobTask | null> => {
   if (!chrome.storage.local) return null;
   return ((await chrome.storage.local.get(taskId)) ?? {})[taskId] ?? null;
-};
-
-/**
- * Returns custom query selectors the user set in the setting modal
- * @returns Part of querySelectors
- */
-export const getCustomQuerySelectors =
-  async (): Promise<QuerySelectors | null> => {
-    if (import.meta.env.DEV) return querySelectors;
-
-    return (
-      ((await chrome.storage.local.get(CUSTOM_QUERY_SELECTORS)) ?? {})[
-        CUSTOM_QUERY_SELECTORS
-      ] ?? { ...querySelectors }
-    );
-  };
-
-/**
- * Update custom query selectors from the storage
- * @param newQuerySelectors querySelctors to be updated
- */
-export const setCustomQuerySelectors = async (
-  newQuerySelectors: QuerySelectors
-) => {
-  await chrome.storage.local.set({
-    [CUSTOM_QUERY_SELECTORS]: newQuerySelectors,
-  });
-};
-
-/**
- * reset custom query selectors as the initial value
- */
-export const resetCustomQuerySelectors = async () => {
-  await setCustomQuerySelectors({ ...querySelectors });
 };

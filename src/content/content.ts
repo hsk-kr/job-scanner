@@ -1,44 +1,24 @@
+import { JobInfo } from '@/types/job';
 import { checkJobConditions } from '@/utils/condition';
 import {
   getJobInfo,
-  getJobList,
-  isLoading,
-  moveToNextJobList,
+  getJobListItems,
+  getJobListContainer,
   removeHTMLTags,
+  clickJobListItem,
   scrollToTheBottom,
-  scrollToTheJobPost,
+  scrollToTheJobListItem,
+  moveToNextJobPage,
 } from '@/utils/linkedin/dom';
 import { addUpActiveTask, finishTask, getActiveTask } from '@/utils/storage';
 import { delay } from '@/utils/time';
 
-const genearatorJobPosts = async function* () {
-  const delayUntilDoneLoading = () => {
-    const LOADING_RECHECK_INTERVAL = 200;
-    const MAX_TRY = 30;
-    let cnt = 0;
-    return new Promise<void>((resolve, reject) => {
-      const cb = () => {
-        if (isLoading()) {
-          cnt++;
-          if (cnt > MAX_TRY) {
-            clearInterval(tm);
-            reject(`tried over MAX_TRY(${MAX_TRY}) times.`);
-          }
-        } else {
-          clearInterval(tm);
-          resolve();
-        }
-      };
+const DELAY = 3000;
 
-      const tm = setInterval(cb, LOADING_RECHECK_INTERVAL);
-      cb();
-    });
-  };
-
+const getJobPosts = async function* () {
   let activeTask = await getActiveTask();
 
   while (activeTask) {
-    // There is no task in the progress
     if (!activeTask) {
       return {
         activeTask,
@@ -46,16 +26,21 @@ const genearatorJobPosts = async function* () {
       };
     }
 
+    const jobListContainer = getJobListContainer(document.body);
+    if (!jobListContainer) {
+      await delay(DELAY);
+      continue;
+    }
     await delay(activeTask.delay);
-    await delayUntilDoneLoading();
-    await scrollToTheBottom(); // to load all job posts.
+    await scrollToTheBottom(jobListContainer); // to load all job posts.
 
-    let [jobList, clickJob] = await getJobList();
-    let count = jobList.length;
+    let jobListItems = getJobListItems(document.body);
+    let listItemIdx = 0;
 
-    for (let i = 0; i < count; i++) {
+    while (listItemIdx < jobListItems.length) {
+      const jobListItem = jobListItems[listItemIdx];
+
       activeTask = await getActiveTask();
-      // There is no task in the progress
       if (!activeTask) {
         return {
           activeTask,
@@ -63,71 +48,38 @@ const genearatorJobPosts = async function* () {
         };
       }
 
-      // since it returns visible job list, gets joblist every time.
-      await scrollToTheJobPost(jobList[i]);
-      await delayUntilDoneLoading();
+      scrollToTheJobListItem(jobListContainer, jobListItem);
+      clickJobListItem(jobListItem);
 
-      [jobList, clickJob] = await getJobList();
-      count = jobList.length;
+      let retry = 5;
+      let jobInfo: JobInfo | null = null;
 
-      // When the div of a job post is not usual, skip the job post.
-      if (!(await clickJob(i))) {
+      do {
+        await delay(DELAY);
+        jobInfo = getJobInfo(document.body);
+        retry--;
+      } while (jobInfo === null && retry > 0);
+      if (retry <= 0) {
+        window.location.reload();
         continue;
       }
 
-      await delay(activeTask.delay);
-
-      // Sometimes, loading of the job post doesn't finish,
-      // when it happens, click another item then click back to the item.
-      try {
-        await delayUntilDoneLoading();
-      } catch {
-        // if the job post is the only one in the job list, refresh it.
-        if (count === 1) {
-          window.location.reload();
-          return;
-        }
-
-        // click another post
-        let isNormalJobPost: boolean;
-        if (i === 0) {
-          isNormalJobPost = await clickJob(1);
-        } else {
-          isNormalJobPost = await clickJob(0);
-        }
-
-        if (!isNormalJobPost) {
-          window.location.reload();
-          return;
-        }
-
-        // it will increase i by 1 and will come back to this job post in the next step.
-        i--;
-        await delay(activeTask.delay);
-        continue;
-      }
-
-      const jobInfo = await getJobInfo();
-      // Returns jobInfo
       yield {
         activeTask,
         value: jobInfo,
       };
+
+      jobListItems = getJobListItems(document.body);
+      listItemIdx++;
     }
 
-    // next page and wait
-    const success = await moveToNextJobList();
-
-    // Last Page
-    if (!success) {
+    const hasMorePages = moveToNextJobPage(document.body);
+    if (!hasMorePages) {
       return {
         activeTask,
         value: null,
       };
     }
-
-    await delayUntilDoneLoading();
-    activeTask = await getActiveTask();
   }
 };
 
@@ -136,10 +88,9 @@ const crawlJobPosts = async () => {
   let taskId = '';
 
   try {
-    for await (const jobPost of genearatorJobPosts()) {
+    for await (const jobPost of getJobPosts()) {
       taskId = jobPost.activeTask.id;
 
-      // add a job into the storage
       if (
         jobPost.value &&
         checkJobConditions(

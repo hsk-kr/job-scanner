@@ -45,7 +45,10 @@ export const checkJobConditions = (
         let numApplicants: number | undefined = undefined;
 
         for (let i = 0; i < splitInfo.length; i++) {
-          if (i > 0 && splitInfo[i] === 'applicants') {
+          if (
+            i > 0 &&
+            (splitInfo[i] === 'people' || splitInfo[i] === 'applicants')
+          ) {
             numApplicants = Number(splitInfo[i - 1]);
             break;
           }
