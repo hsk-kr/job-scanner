@@ -1,5 +1,5 @@
 # deploy
-dist*.zip
+chromeBuild
 
 # Logs
 logs
