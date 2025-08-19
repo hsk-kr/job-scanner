@@ -4,20 +4,29 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
+	"testing"
 )
 
 func deleteBuildFolder() error {
-	path := "./dist"
-
-	if !ExistFile(path) {
-		path = "../dist"
+	rootPath, err := GetRootPath()
+	if err != nil {
+		return err
 	}
+
+	buildFolderName := "dist"
+
+	if testing.Testing() {
+		buildFolderName += "_test"
+	}
+
+	path := filepath.Join(rootPath, buildFolderName)
 
 	if !ExistFile(path) {
 		return nil
 	}
 
-	err := os.RemoveAll(path)
+	err = os.RemoveAll(path)
 
 	if err != nil {
 		return err
@@ -46,11 +55,11 @@ func GenerateBuildZipFile(version string) error {
 		return err
 	}
 
-	buildFolderPath := "../chromeBuild"
-	distPath := "../dist"
-	if ExistFile("./package.json") {
-		buildFolderPath = "./chromeBuild"
-		distPath = "./dist"
+	rootPath, err := GetRootPath()
+	buildFolderPath := filepath.Join(rootPath, "chromeBuild")
+	distPath := filepath.Join(rootPath, "dist")
+	if testing.Testing() {
+		buildFolderPath += "_test"
 	}
 
 	if !ExistFile(buildFolderPath) {

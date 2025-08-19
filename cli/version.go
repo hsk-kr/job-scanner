@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -15,11 +16,11 @@ type PackageProps struct {
 }
 
 func getManifestJsonFilePath() (string, error) {
-	path := "./public/manifest.json"
-
-	if !ExistFile(path) {
-		path = "../public/manifest.json"
+	rootPath, err := GetRootPath()
+	if err != nil {
+		return "", err
 	}
+	path := filepath.Join(rootPath, "public", "manifest.json")
 
 	if !ExistFile(path) {
 		return "", errors.New("Cannot find manifest.json")
@@ -29,11 +30,11 @@ func getManifestJsonFilePath() (string, error) {
 }
 
 func getPackageJsonFilePath() (string, error) {
-	path := "./package.json"
-
-	if !ExistFile(path) {
-		path = "../package.json"
+	rootPath, err := GetRootPath()
+	if err != nil {
+		return "", err
 	}
+	path := filepath.Join(rootPath, "package.json")
 
 	if !ExistFile(path) {
 		return "", errors.New("Cannot find package.json")
@@ -43,11 +44,11 @@ func getPackageJsonFilePath() (string, error) {
 }
 
 func getEnvFilePath() (string, error) {
-	path := "./.env"
-
-	if !ExistFile(path) {
-		path = "../.env"
+	rootPath, err := GetRootPath()
+	if err != nil {
+		return "", err
 	}
+	path := filepath.Join(rootPath, ".env")
 
 	if !ExistFile(path) {
 		return "", errors.New("Cannot find .env")

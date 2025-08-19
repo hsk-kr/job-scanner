@@ -10,6 +10,29 @@ import (
 	"strings"
 )
 
+func GetRootPath() (string, error) {
+	wd, err := os.Getwd()
+
+	if err != nil {
+		return "", err
+	}
+
+	fileLookingFor := "package.json"
+	paths := []string{
+		wd,
+		filepath.Join(wd, ".."),
+	}
+
+	for _, path := range paths {
+		p := filepath.Join(path, fileLookingFor)
+		if ExistFile(p) {
+			return path, nil
+		}
+	}
+
+	return "", fmt.Errorf("not found")
+}
+
 func ExistFile(filePath string) bool {
 	_, error := os.Stat(filePath)
 	return !errors.Is(error, os.ErrNotExist)
