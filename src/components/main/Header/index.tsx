@@ -1,3 +1,4 @@
+import { showLogModal } from '@/components/modals/LogModal';
 import { useJobTasks } from '@/stores/job-task';
 import { Link } from 'react-router-dom';
 
@@ -6,6 +7,10 @@ const VERSION = import.meta.env.VITE_VERSION;
 const Header = () => {
   const { activeTask } = useJobTasks();
   const canCreateTask = activeTask === undefined;
+
+  const openLog = async () => {
+    showLogModal();
+  };
 
   return (
     <div className="navbar bg-base-300 px-4">
@@ -41,6 +46,9 @@ const Header = () => {
                   >
                     Viewer
                   </a>
+                </li>
+                <li onClick={openLog}>
+                  <a href="#">Log</a>
                 </li>
               </ul>
             </details>

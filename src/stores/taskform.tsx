@@ -17,6 +17,7 @@ import {
 } from '@/utils/storage';
 import Loading from '@/components/Loading';
 import { UseFormReturn, useForm } from 'react-hook-form';
+import { logInfo } from '@/utils/log';
 
 /**
  * If conditionId does not exist in `from`, it means the data came from unusedConditions.
@@ -62,7 +63,6 @@ interface TaskFormContext {
 
 const TaskFormContext = createContext<TaskFormContext>(null!);
 
-// eslint-disable-next-line react-refresh/only-export-components
 export const useTaskForm = () => useContext(TaskFormContext);
 
 const TaskFormContextProvider = ({ children }: { children?: ReactNode }) => {
@@ -181,6 +181,9 @@ const TaskFormContextProvider = ({ children }: { children?: ReactNode }) => {
         if (hasUnusedSubConditionsUpdated)
           setUnusedSubConditions(newUnusedSubConditions);
       } catch (e) {
+        if (e instanceof Error) {
+          logInfo(`Move subcondition error: ${e.message}`);
+        }
         console.error(e);
       }
     },
@@ -235,7 +238,6 @@ const TaskFormContextProvider = ({ children }: { children?: ReactNode }) => {
     }
     setConditions(initialValue.jobConditions);
     setUnusedSubConditions(initialValue.unusedSubConditions);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialValue]);
 
   useEffect(() => {
@@ -253,7 +255,6 @@ const TaskFormContextProvider = ({ children }: { children?: ReactNode }) => {
     return () => {
       release();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [unusedSubConditions, conditions, taskName, delay]);
 
   const value = {

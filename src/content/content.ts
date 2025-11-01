@@ -10,6 +10,7 @@ import {
   scrollToTheJobListItem,
   moveToNextJobPage,
 } from '@/utils/linkedin/dom';
+import { logInfo } from '@/utils/log';
 import { addUpActiveTask, finishTask, getActiveTask } from '@/utils/storage';
 import { delay } from '@/utils/time';
 
@@ -33,13 +34,14 @@ const getJobPosts = async function* () {
     }
     await delay(activeTask.delay);
     await scrollToTheBottom(jobListContainer); // to load all job posts.
+    await logInfo(
+      `called scrollToTheBottom, scrollTop: ${jobListContainer.scrollTop} scrollHeight${jobListContainer.scrollHeight}`
+    );
 
     let jobListItems = getJobListItems(document.body);
     let listItemIdx = 0;
 
     while (listItemIdx < jobListItems.length) {
-      const jobListItem = jobListItems[listItemIdx];
-
       activeTask = await getActiveTask();
       if (!activeTask) {
         return {
@@ -47,6 +49,9 @@ const getJobPosts = async function* () {
           value: null,
         };
       }
+
+      await logInfo(`get ${listItemIdx} index(${jobListItems.length}) item.`);
+      const jobListItem = jobListItems[listItemIdx];
 
       scrollToTheJobListItem(jobListContainer, jobListItem);
       clickJobListItem(jobListItem);
@@ -59,10 +64,16 @@ const getJobPosts = async function* () {
         jobInfo = getJobInfo(document.body);
         retry--;
       } while (jobInfo === null && retry > 0);
+
       if (retry <= 0) {
+        await logInfo(`failed to get job information within 5 reties`);
         window.location.reload();
         continue;
       }
+
+      await logInfo(
+        `get job information. job title: ${jobInfo?.jobTitle}, job description: ${jobInfo?.jobDescription?.substring(0, 100).replace(/\s/g, '')}, job additional info: ${jobInfo?.jobAdditionalInfo}, job url: ${jobInfo?.url}`
+      );
 
       yield {
         activeTask,
@@ -113,6 +124,9 @@ const crawlJobPosts = async () => {
       });
     }
   } catch (e) {
+    if (e instanceof Error) {
+      logInfo(`unexpected error: ${e.message}`);
+    }
     console.error(e);
   }
 

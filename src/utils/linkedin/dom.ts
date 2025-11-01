@@ -1,4 +1,5 @@
 import { JobInfo } from '@/types/job';
+import { logInfo } from '../log';
 
 export const getJobInfo = (body: HTMLElement): JobInfo | null => {
   const jobInfo: JobInfo = {
@@ -8,7 +9,10 @@ export const getJobInfo = (body: HTMLElement): JobInfo | null => {
     url: window.location.href,
   };
   const jobsDetails = body.querySelector<HTMLElement>('.jobs-details');
-  if (!jobsDetails) return null;
+  if (!jobsDetails) {
+    logInfo('failed to get job detail');
+    return null;
+  }
 
   const links = jobsDetails.querySelectorAll('a');
   let topCardContainer: HTMLElement | null = null;
@@ -26,19 +30,28 @@ export const getJobInfo = (body: HTMLElement): JobInfo | null => {
     });
     break;
   }
-  if (!topCardContainer) return null;
+
+  if (!topCardContainer) {
+    logInfo('failed to get job header');
+    return null;
+  }
 
   jobInfo.jobDescription =
     jobsDetails
       .querySelector<HTMLElement>('#job-details')
       ?.textContent?.trim() ?? '';
-  if (jobInfo.jobDescription === '') return null;
+
+  if (jobInfo.jobDescription === '') {
+    logInfo('failed to get job description');
+    return null;
+  }
 
   const divs = topCardContainer.querySelectorAll<HTMLDivElement>('div');
   const info: { companyName: string; extraInfo: string } = {
     companyName: '',
     extraInfo: '',
   };
+
   for (const div of divs) {
     const className = div.className;
     const isCompanyName =
@@ -52,7 +65,12 @@ export const getJobInfo = (body: HTMLElement): JobInfo | null => {
     if (isExtraInfo) info.extraInfo = div.textContent?.trim() ?? info.extraInfo;
   }
 
-  if (info.companyName === '' || info.extraInfo === '') return null;
+  if (info.companyName === '' || info.extraInfo === '') {
+    logInfo(
+      `failed to get company name or extra information${JSON.stringify(info)}`
+    );
+    return null;
+  }
 
   jobInfo.jobAdditionalInfo = `${info.companyName} • ${info.extraInfo}`;
 

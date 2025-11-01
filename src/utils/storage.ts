@@ -1,11 +1,13 @@
 import { v4 as uuidv4 } from 'uuid';
 import { JobInfo, JobTask, JobTaskStatus } from '@/types/job';
 import { TaskFormDraft } from '@/types/storage';
+import { logInfo } from './log';
 
 // lcoal
 // in the local storage, except those fields are tasks.
 const ACTIVE_TASK_ID = 'activeTaskId';
 const CUSTOM_QUERY_SELECTORS = 'customQuerySelectors';
+const LOG = 'log';
 
 // session
 const DRAFT = 'draft'; // key to save draft data in the sessino storage
@@ -45,7 +47,7 @@ export const createTask = async (
 export const updateTask = async (taskId: string, jobTask: Partial<JobTask>) => {
   const task = await getTask(taskId);
   if (!task) {
-    console.error('cannot find the task:' + taskId);
+    logInfo(`cannot find a task ${taskId}`);
     return;
   }
 
@@ -67,7 +69,7 @@ export const updateTask = async (taskId: string, jobTask: Partial<JobTask>) => {
 export const addUpActiveTask = async (jobHaveFound: JobInfo | null) => {
   const activeTask = await getActiveTask();
   if (activeTask === null) {
-    console.error('Cannot find the active task');
+    logInfo('cannot find active task');
     return;
   }
 
@@ -94,6 +96,8 @@ export const getTasks = async (): Promise<JobTask[]> => {
     [ACTIVE_TASK_ID]: activeTaskId,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     [CUSTOM_QUERY_SELECTORS]: customQuerySelectors,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    [LOG]: log,
     ...tasks
   } = await chrome.storage.local.get();
 
@@ -128,7 +132,7 @@ export const deleteAllTasks = async () => {
 export const startTask = async (taskId: string) => {
   const task = await getTask(taskId);
   if (!task) {
-    console.error('cannot find task to start:' + taskId);
+    logInfo(`cannot find a task to start ${taskId}`);
     return;
   }
 
@@ -151,7 +155,7 @@ export const finishTask = async (data: {
 }) => {
   const activeTask = await getActiveTask();
   if (!activeTask) {
-    console.error('cannot find the activeTask to finish');
+    logInfo('cannot find active task to finish');
     return;
   }
 
