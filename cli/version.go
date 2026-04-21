@@ -11,6 +11,25 @@ import (
 	"strings"
 )
 
+func RunVersion(args []string) {
+	switch len(args) {
+	case 0:
+		version, err := GetVersion()
+		if err != nil {
+			DisplayErrorAndExit(err)
+		}
+		fmt.Println(version)
+	case 1:
+		if err := UpdateVersion(args[0]); err != nil {
+			DisplayErrorAndExit(err)
+		}
+		fmt.Printf("version updated to %s\n", args[0])
+	default:
+		fmt.Fprintln(os.Stderr, "version takes at most one argument")
+		os.Exit(1)
+	}
+}
+
 type PackageProps struct {
 	Version string `json:"version"`
 }

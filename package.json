@@ -7,6 +7,7 @@
     "dev": "vite",
     "test": "vitest run",
     "build": "tsc && vite build && vite build -c vite-script.config.ts && browserify ./dist/assets/content.js -o ./dist/assets/content.js",
+    "build:cli": "sh scripts/install-cli.sh",
     "preview": "vite preview",
     "prepare": "husky"
   },

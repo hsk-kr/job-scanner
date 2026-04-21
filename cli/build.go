@@ -8,6 +8,24 @@ import (
 	"testing"
 )
 
+func RunBuild(args []string) {
+	if len(args) != 0 {
+		fmt.Fprintln(os.Stderr, "build takes no arguments")
+		os.Exit(1)
+	}
+
+	version, err := GetVersion()
+	if err != nil {
+		DisplayErrorAndExit(err)
+	}
+
+	if err := GenerateBuildZipFile(version); err != nil {
+		DisplayErrorAndExit(err)
+	}
+
+	fmt.Printf("built chromeBuild/chromeBuild-%s.zip\n", version)
+}
+
 func deleteBuildFolder() error {
 	rootPath, err := GetRootPath()
 	if err != nil {
